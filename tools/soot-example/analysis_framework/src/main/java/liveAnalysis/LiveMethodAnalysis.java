@@ -88,11 +88,18 @@ class LiveMethodAnalysis
                 else {
                     outSet.add(astmt);
                     //TODO differentiate normal static invokes from java static invokes
-                    if (nodeStmt.getRightOp() instanceof StaticInvokeExpr && ((StaticInvokeExpr) nodeStmt.getRightOp()).getMethod().getDeclaringClass().getName().toLowerCase().startsWith("java.") && ((StaticInvokeExpr) nodeStmt.getRightOp()).getArgs().size() > 0 && ((StaticInvokeExpr) nodeStmt.getRightOp()).getArg(0).equals(astmt.getLeftOp())) {
-                        clone = (AssignStmt) nodeStmt.clone();
-                        clone.setRightOp(astmt.getRightOp());
-                        outSet.add(clone);
-                        added = true;
+                    if (nodeStmt.getRightOp() instanceof StaticInvokeExpr && ((StaticInvokeExpr) nodeStmt.getRightOp()).getMethod().getDeclaringClass().getName().toLowerCase().startsWith("java.") && ((StaticInvokeExpr) nodeStmt.getRightOp()).getArgs().size() > 0) {
+                        if (((StaticInvokeExpr) nodeStmt.getRightOp()).getArg(0).equals(astmt.getLeftOp())) {
+                            clone = (AssignStmt) nodeStmt.clone();
+                            clone.setRightOp(astmt.getRightOp());
+                            outSet.add(clone);
+                            added = true;
+                        } else if (((StaticInvokeExpr) nodeStmt.getRightOp()).getArg(0) instanceof Constant) {
+                            clone = (AssignStmt) nodeStmt.clone();
+                            clone.setRightOp(((StaticInvokeExpr) nodeStmt.getRightOp()).getArg(0));
+                            outSet.add(clone);
+                            added = true;
+                        }
                     }
                     else if (nodeStmt.getRightOp() instanceof Constant && ((Value) nodeStmt.getRightOp()).equals(astmt.getLeftOp())) {
                         clone = (AssignStmt) nodeStmt.clone();

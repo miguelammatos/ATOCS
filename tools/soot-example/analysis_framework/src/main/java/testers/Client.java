@@ -22,6 +22,15 @@ public class Client {
         db.put("row3", db.get(key));
 
         db.delete("row2");
+
+        int v = 0;
+
+        if (v == 0)
+            v = 1;
+        else
+            v = 2;
+
+        db.put("row6", v);
     }
 }
 
