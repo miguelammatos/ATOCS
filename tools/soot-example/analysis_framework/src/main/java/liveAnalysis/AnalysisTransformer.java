@@ -120,7 +120,6 @@ public class AnalysisTransformer extends SceneTransformer
                             if (itArgs.hasNext())
                                 stringBuilder.append(", ");
                         }
-
                         stringBuilder.append(")");
                         dbMethods.get(methodName).add(stringBuilder.toString());
                     }
@@ -143,7 +142,6 @@ public class AnalysisTransformer extends SceneTransformer
 
     private Set<AssignStmt> getNextFlow(Set<AssignStmt> prevFlow, Unit unit) {
         HashSet<AssignStmt> nextFlow = new HashSet<AssignStmt>();
-
         if (unit instanceof AssignStmt) {
             boolean added = false;
             AssignStmt nodeStmt = (AssignStmt) unit;
