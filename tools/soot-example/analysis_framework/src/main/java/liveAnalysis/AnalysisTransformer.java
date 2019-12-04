@@ -3,6 +3,8 @@ package liveAnalysis;
 import java.util.*;
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Sources;
 import soot.toolkits.graph.*;
 import soot.toolkits.scalar.BackwardFlowAnalysis;
 import soot.toolkits.scalar.FlowSet;
@@ -25,6 +27,11 @@ public class AnalysisTransformer extends SceneTransformer
     protected void internalTransform(String arg0, Map arg1) {
         Scene.v().loadNecessaryClasses();
 
+        for (String methodName : dbMethods.keySet()) {
+            SootMethod method = Scene.v().getSootClass(DB_CLASS_NAME).getMethodByName(methodName);
+            printPossibleCallers(method);
+        }
+
         // Get Main Method
         SootMethod sMethod = Scene.v().getMainMethod();
 
@@ -36,6 +43,8 @@ public class AnalysisTransformer extends SceneTransformer
     public List<Value> analyseMethod(SootMethod sMethod) {
         // Create graph based on the method
         UnitGraph graph = new BriefUnitGraph(sMethod.getActiveBody());
+
+        
 
         // Perform LV Analysis on the Graph
 //        LiveMethodAnalysis analysis = new LiveMethodAnalysis(graph);
@@ -242,4 +251,12 @@ public class AnalysisTransformer extends SceneTransformer
         }
     }
 
+    public void printPossibleCallers(SootMethod target) {
+        CallGraph cg = Scene.v().getCallGraph();
+        Iterator sources = new Sources(cg.edgesInto(target));
+        while (sources.hasNext()) {
+            SootMethod src = (SootMethod)sources.next();
+            System.out.println(target.getSubSignature() + " might be called by " + src.getSubSignature());
+        }
+    }
 }
