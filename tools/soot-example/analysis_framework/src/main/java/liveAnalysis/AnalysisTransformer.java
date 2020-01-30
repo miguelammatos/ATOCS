@@ -16,27 +16,36 @@ public class AnalysisTransformer extends SceneTransformer
     private Map<String, List<String>> dbMethods = new HashMap<String, List<String>>();
     private final String DB_CLASS_NAME = "testers.DB";
 
+    private Map<String, List<Value>> methodsReturnValues = new HashMap<String, List<Value>>(); //String is the Signature of the SootMethod
+
     public AnalysisTransformer() {
         super();
         dbMethods.put("put", new ArrayList<String>());
         dbMethods.put("get", new ArrayList<String>());
         dbMethods.put("scan", new ArrayList<String>());
         dbMethods.put("delete", new ArrayList<String>());
+        dbMethods.put("test", new ArrayList<String>());
     }
     @Override
     protected void internalTransform(String arg0, Map arg1) {
         Scene.v().loadNecessaryClasses();
 
+        List<SootMethod> dbAPI = new ArrayList<SootMethod>();
+
         for (String methodName : dbMethods.keySet()) {
             SootMethod method = Scene.v().getSootClass(DB_CLASS_NAME).getMethodByName(methodName);
-            printPossibleCallers(method);
+            dbAPI.add(method);
         }
 
-        // Get Main Method
-        SootMethod sMethod = Scene.v().getMainMethod();
+        List<SootMethod> methodsToAnalyse = getDbInteractions(dbAPI);
 
-        analyseMethod(sMethod);
+        for (SootMethod sMethod : methodsToAnalyse)
+            System.out.println("METHOD: " + sMethod.getSignature());
 
+        for (SootMethod sMethod : methodsToAnalyse) {
+            if (!methodsReturnValues.containsKey(sMethod.getSignature()))
+                analyseMethod(sMethod);
+        }
         printAllDBMethodArgs();
     }
 
@@ -44,13 +53,9 @@ public class AnalysisTransformer extends SceneTransformer
         // Create graph based on the method
         UnitGraph graph = new BriefUnitGraph(sMethod.getActiveBody());
 
-        
-
-        // Perform LV Analysis on the Graph
-//        LiveMethodAnalysis analysis = new LiveMethodAnalysis(graph);
-
-        return iterateMethodUnits(graph);
-
+        List<Value> returnValues = iterateMethodUnits(graph);
+        methodsReturnValues.put(sMethod.getSignature(), returnValues);
+        return returnValues;
     }
 
     public List<Value> iterateMethodUnits(UnitGraph graph) {
@@ -58,7 +63,7 @@ public class AnalysisTransformer extends SceneTransformer
         Iterator<Unit> unitIt = graph.iterator();
         while (unitIt.hasNext()) {
             Unit unit = unitIt.next();
-//            Set<AssignStmt> flowAfter = analysis.getFlowAfter(unit);
+            System.out.println(unit);
 
             Set<AssignStmt> flowAfter = getNextFlow(getFlowBefore(flowMap, graph.getPredsOf(unit)), unit);
 
@@ -77,13 +82,14 @@ public class AnalysisTransformer extends SceneTransformer
 
                     String methodName = methodCall.getMethod().getName();
                     if (methodCall.getMethod().getDeclaringClass().getName().equals(DB_CLASS_NAME) && dbMethods.keySet().contains(methodName)) {
-                        StringBuilder stringBuilder = new StringBuilder();
+                        StringBuilder stringBuilder = new StringBuilder(); //TODO fazer string apenas depois da analise. Aqui adicionar apenas Constant ou null à lista de argumentos do método
                         stringBuilder.append("(");
 
                         Iterator<Value> itArgs = methodCall.getArgs().iterator();
                         while (itArgs.hasNext()) {
                             Value arg = itArgs.next();
                             List<Value> values = new ArrayList<Value>();
+                            System.out.println("VALUE: " + arg.toString() + " CLASS: " + arg.getClass());
                             if (arg instanceof Constant)
                                 values.add(arg);
                             else
@@ -102,7 +108,11 @@ public class AnalysisTransformer extends SceneTransformer
                                         List<Value> methodRet = new ArrayList<Value>();
                                         SootMethod sootMethod = method.getMethod();
                                         if (sootMethod != null) {
-                                            methodRet.addAll(analyseMethod(sootMethod));
+                                            if (methodsReturnValues.containsKey(sootMethod.getSignature())) {
+                                                methodRet.addAll(methodsReturnValues.get(sootMethod.getSignature()));
+                                            } else {
+                                                methodRet.addAll(analyseMethod(sootMethod));
+                                            }
                                             if (methodRet.isEmpty())
                                                 stringBuilder.append("?");
                                             else {
@@ -120,7 +130,6 @@ public class AnalysisTransformer extends SceneTransformer
                                         } else {
                                             stringBuilder.append("?");
                                         }
-                                        updateMethodReturnValue(flowAfter, value, methodRet);
                                     }
                                     if (itValue.hasNext())
                                         stringBuilder.append("|");
@@ -198,23 +207,6 @@ public class AnalysisTransformer extends SceneTransformer
         return nextFlow;
     }
 
-    private void updateMethodReturnValue(Set<AssignStmt> flowSet, Value methodCall, List<Value> returnValues) {
-        for (AssignStmt astmt : flowSet) {
-            if (astmt.getRightOp().equals(methodCall) && !returnValues.isEmpty()) {
-                if (returnValues.size() == 1) { //only update the return value
-                    astmt.setRightOp(returnValues.get(0));
-                } else { //add all possible return values
-                    for (Value retValue : returnValues) {
-                        AssignStmt newStmt = (AssignStmt) astmt.clone();
-                        newStmt.setRightOp(retValue);
-                        flowSet.add(newStmt);
-                    }
-                    flowSet.remove(astmt);
-                }
-            }
-        }
-    }
-
     private List<Value> getValueOfArg(Set<AssignStmt> flowSet, Value value) {
         List<Value> values = new ArrayList<Value>();
         for (AssignStmt stmt : flowSet) {
@@ -258,5 +250,32 @@ public class AnalysisTransformer extends SceneTransformer
             SootMethod src = (SootMethod)sources.next();
             System.out.println(target.getSubSignature() + " might be called by " + src.getSubSignature());
         }
+    }
+
+    public List<SootMethod> getDbInteractions(List<SootMethod> dbAPI) {
+        List<SootMethod> methodsToAnalyse = new ArrayList<SootMethod>();
+        CallGraph cg = Scene.v().getCallGraph();
+        for (SootMethod target : dbAPI) {
+            Iterator sources = new Sources(cg.edgesInto(target));
+            while (sources.hasNext()) {
+                SootMethod src = (SootMethod) sources.next();
+                if (!listHasSootMethod(methodsToAnalyse, src))
+                    methodsToAnalyse.add(src);
+//                System.out.println(target.getSubSignature() + " might be called by " + src.getSubSignature());
+            }
+        }
+        return methodsToAnalyse;
+    }
+
+    public boolean listHasSootMethod(List<SootMethod> list, SootMethod method) {
+        for (SootMethod m : list) {
+            if (equalSootMethods(m, method))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean equalSootMethods(SootMethod m1, SootMethod m2) {
+        return m1.getSignature().equals(m2.getSignature());
     }
 }

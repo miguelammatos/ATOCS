@@ -1,10 +1,19 @@
 package testers;
 public class Client {
+    public static final String CONST = "row7";
+
     public static String getKey() {
         DB db = new DB();
         db.put("row4", 2);
 
-        return "row1";
+        String v = "";
+
+        if (v.equals(""))
+            v = "row1";
+        else
+            v = "row100";
+
+        return v;
     }
 
     public static void main(String[] args) {
@@ -19,7 +28,7 @@ public class Client {
 
         db.scan(key);
 
-        db.put("row3", db.get(key));
+        db.put("row3", db.get("row1"));
 
         db.delete("row2");
 
@@ -31,6 +40,15 @@ public class Client {
             v = 2;
 
         db.put("row6", v);
+
+        db.get(CONST); //retrieves value from constant
+
+        db.get(DB.CONSTANT); //retrieves value from constant in another class
+
+        byte[] bytes = "ola".getBytes();
+        db.test(bytes);
+
+        db.get(getKey());
     }
 }
 

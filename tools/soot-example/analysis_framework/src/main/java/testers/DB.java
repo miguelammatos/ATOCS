@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DB {
+    public static final String CONSTANT = "row8";
+
     public HashMap<String, Integer> db = new HashMap<String, Integer>();
 
     public void put(String key, Integer value){
@@ -25,5 +27,9 @@ public class DB {
 
     public void delete(String key){
         db.remove(key);
+    }
+
+    public void test(byte[] bytes) {
+
     }
 }

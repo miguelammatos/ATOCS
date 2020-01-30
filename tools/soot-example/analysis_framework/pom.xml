@@ -19,9 +19,6 @@
                 </executions>
                 <configuration>
                     <mainClass>RunDataFlowAnalysis</mainClass>
-                    <arguments>
-                        <argument>testers.Client</argument>
-                    </arguments>
                 </configuration>
             </plugin>
         </plugins>
@@ -34,13 +31,5 @@
             <version>3.3.0</version>
         </dependency>
     </dependencies>
-
-    <!--<dependencies>-->
-        <!--<dependency>-->
-            <!--<groupId>thesis.soot.examples</groupId>-->
-            <!--<artifactId>soot</artifactId>-->
-            <!--<version>3.3.0</version>-->
-        <!--</dependency>-->
-    <!--</dependencies>-->
 
 </project>
