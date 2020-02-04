@@ -18,8 +18,8 @@ public class RunDataFlowAnalysis
         String[] sootArgs = {
                 "-cp", classPath, "-pp", 	// sets the class path for Soot
                 "-w", 						// Whole program analysis, necessary for using Transformer
-                "-src-prec", "only-class",		// Specify type of source file
-                "-f", "J", 					// Specify type of output file
+                "-src-prec", "class",		// Specify type of source file. Possibly use only-class
+//                "-f", "J", 					// Specify type of output file
                 "-allow-phantom-refs",
                 "-process-dir", directory
         };

@@ -63,7 +63,7 @@ public class AnalysisTransformer extends SceneTransformer
         Iterator<Unit> unitIt = graph.iterator();
         while (unitIt.hasNext()) {
             Unit unit = unitIt.next();
-            System.out.println(unit);
+//            System.out.println(unit);
 
             Set<AssignStmt> flowAfter = getNextFlow(getFlowBefore(flowMap, graph.getPredsOf(unit)), unit);
 
@@ -261,7 +261,7 @@ public class AnalysisTransformer extends SceneTransformer
                 SootMethod src = (SootMethod) sources.next();
                 if (!listHasSootMethod(methodsToAnalyse, src))
                     methodsToAnalyse.add(src);
-//                System.out.println(target.getSubSignature() + " might be called by " + src.getSubSignature());
+                System.out.println(target.getSubSignature() + " might be called by " + src.getSubSignature());
             }
         }
         return methodsToAnalyse;
