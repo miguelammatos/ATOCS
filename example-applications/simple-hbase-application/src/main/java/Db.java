@@ -1,12 +1,12 @@
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.apache.hadoop.hbase.util.Bytes.toBytes;
 
@@ -69,20 +69,38 @@ public class Db {
         }
     }
 
-    public Result get(String tableName, String row) {
+    public Get getGetOp(String row) {
+        Get get = new Get(Bytes.toBytes(row));
+        get.setFilter(new SingleColumnValueFilter(Bytes.toBytes("User"), Bytes.toBytes("Name"), CompareOperator.GREATER, Bytes.toBytes("Bla")));
+        return get;
+    }
+
+    public Result get(String tableName, Get get) {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
-            return table.get(new Get(Bytes.toBytes(row)));
+            get.setFilter(getFilter(Bytes.toBytes("User")));
+            return table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
+    public Filter getFilter(byte[] fam) {
+//        return new SingleColumnValueFilter(fam, Bytes.toBytes("Name"), CompareOperator.EQUAL, Bytes.toBytes("Jo"));
+        List<MultiRowRangeFilter.RowRange> list = new ArrayList<MultiRowRangeFilter.RowRange>();
+        MultiRowRangeFilter.RowRange rowRange = new MultiRowRangeFilter.RowRange(Bytes.toBytes("row1"), true, Bytes.toBytes("row12"), true);
+        list.add(rowRange);
+        return new MultiRowRangeFilter(list);
+    }
+
     public Result get(String tableName, byte[] row) {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
-            return table.get(new Get(row));
+            Get get = new Get(row);
+            get.addColumn(Bytes.toBytes("User"), Bytes.toBytes("Addr"));
+            get.setFilter(new WhileMatchFilter(getFilter(Bytes.toBytes("FAM"))));
+            return table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
         }

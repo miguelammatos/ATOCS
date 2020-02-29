@@ -12,8 +12,8 @@ import static org.apache.hadoop.hbase.util.Bytes.toBytes;
 public class Main {
     public static void main(String[] args) throws IOException {
 //        new App0(1);
-        new App1("FirstTable");
-//        new App2();
+//        new App1("FirstTable");
+        new App2();
     }
 
 }

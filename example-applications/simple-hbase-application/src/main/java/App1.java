@@ -1,10 +1,7 @@
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.filter.ByteArrayComparable;
-import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
-import org.apache.hadoop.hbase.filter.SubstringComparator;
+import org.apache.hadoop.hbase.filter.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
@@ -44,12 +41,11 @@ public class App1 {
         //Get Operation
         ByteArrayComparable comparable = new SubstringComparator("Jo");
         Get get = new Get(Bytes.toBytes("row1"));
-        Filter filter = new SingleColumnValueFilter(Bytes.toBytes(COLUMN_FAMILY_NAME), Bytes.toBytes(COLUMN_NAME),
-                CompareOperator.EQUAL, comparable);
-        get.setFilter(filter);
-        Result getResult = table2.get(get);
-        String greeting = Bytes.toString(getResult.getValue(Bytes.toBytes(COLUMN_FAMILY_NAME), Bytes.toBytes(COLUMN_NAME)));
-        System.out.println("READ: " + greeting);
+        get.setFilter(new ColumnValueFilter(Bytes.toBytes(COLUMN_FAMILY_NAME), Bytes.toBytes(COLUMN_NAME),
+                CompareOperator.EQUAL, comparable));
+        table2.get(get);
+//        String greeting = Bytes.toString(getResult.getValue(Bytes.toBytes(COLUMN_FAMILY_NAME), Bytes.toBytes(COLUMN_NAME)));
+//        System.out.println("READ: " + greeting);
 
         //Scan Operation
         Scan scan = new Scan();
