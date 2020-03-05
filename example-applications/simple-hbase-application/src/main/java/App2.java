@@ -17,11 +17,11 @@ public class App2 {
 //        Get get = new Get(Bytes.toBytes("row1"));
 //        get.setFilter(new SingleColumnValueFilter(Bytes.toBytes("User"), Bytes.toBytes("Name"), CompareOperator.GREATER, Bytes.toBytes("Bla")));
 //        Result result = db.get(Fields.TABLE_NAME, new Get(Bytes.toBytes("row1")));
-        Get get = db.getGetOp("row1");
-        get.setFilter(new ColumnValueFilter(Bytes.toBytes("User"), Bytes.toBytes("Address"),
-                CompareOperator.EQUAL, new SubstringComparator("Jo")));
-        Result result = db.get(Fields.TABLE_NAME, get);
-//        Result result = db.get(Fields.TABLE_NAME, Bytes.toBytes("row1"));
+//        Get get = db.getGetOp("row1");
+//        get.setFilter(new ColumnValueFilter(Bytes.toBytes("User"), Bytes.toBytes("Address"),
+//                CompareOperator.EQUAL, new SubstringComparator("Jo")));
+//        Result result = db.get(Fields.TABLE_NAME, get);
+        db.get(Fields.TABLE_NAME, Bytes.toBytes("row1"));
 //        String greeting = Bytes.toString(result.getValue(Bytes.toBytes(Fields.COLUMN_FAMILY_NAME), Bytes.toBytes(Fields.COLUMN_NAME)));
 //        System.out.println("READ: " + greeting);
 

@@ -12,8 +12,10 @@ import static org.apache.hadoop.hbase.util.Bytes.toBytes;
 
 public class Db {
     private Connection connection;
+    private FilterAbstract filterAbstract;
 
     public Db() {
+        filterAbstract = new FilterConcrete();
         Configuration config = HBaseConfiguration.create();
         try {
             this.connection = ConnectionFactory.createConnection(config);
@@ -78,7 +80,7 @@ public class Db {
     public Result get(String tableName, Get get) {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
-            get.setFilter(getFilter(Bytes.toBytes("User")));
+            get.setFilter(filterAbstract.getFilter(Bytes.toBytes("User")));
             return table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
@@ -86,24 +88,37 @@ public class Db {
         return null;
     }
 
-    public Filter getFilter(byte[] fam) {
-//        return new SingleColumnValueFilter(fam, Bytes.toBytes("Name"), CompareOperator.EQUAL, Bytes.toBytes("Jo"));
-        List<MultiRowRangeFilter.RowRange> list = new ArrayList<MultiRowRangeFilter.RowRange>();
-        MultiRowRangeFilter.RowRange rowRange = new MultiRowRangeFilter.RowRange(Bytes.toBytes("row1"), true, Bytes.toBytes("row12"), true);
-        list.add(rowRange);
-        return new MultiRowRangeFilter(list);
-    }
-
-    public Result get(String tableName, byte[] row) {
+    public void get(String tableName, byte[] row) {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
             Get get = new Get(row);
-            get.addColumn(Bytes.toBytes("User"), Bytes.toBytes("Addr"));
-            get.setFilter(new WhileMatchFilter(getFilter(Bytes.toBytes("FAM"))));
-            return table.get(get);
+            get.setFilter(filterAbstract.getFilter(Bytes.toBytes("FAM")));
+            table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+    }
+
+    public void getWithFilterList(String tableName, byte[] row) {
+        try {
+            Table table = connection.getTable(TableName.valueOf(tableName));
+            Get get = new Get(row);
+            FilterList filterList = new FilterList(filterAbstract.getFilter(Bytes.toBytes("FAM")), filterAbstract.getFilter(Bytes.toBytes("FAM")));
+            get.setFilter(filterList);
+            table.get(get);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getRecursive(String tableName, byte[] row) {
+        try {
+            Table table = connection.getTable(TableName.valueOf(tableName));
+            Get get = new Get(row);
+            get.setFilter(filterAbstract.getFilterRecursive(Bytes.toBytes("FAM"), Bytes.toBytes("QUA")));
+            table.get(get);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
