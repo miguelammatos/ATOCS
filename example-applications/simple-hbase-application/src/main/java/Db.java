@@ -27,8 +27,8 @@ public class Db {
     public void createTable(String tableName) {
         try {
             Admin admin = connection.getAdmin();
-            HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf(Fields.TABLE_NAME));
-            tableDescriptor.addFamily(new HColumnDescriptor(toBytes(Fields.COLUMN_FAMILY_NAME)));
+            TableDescriptorBuilder tableDescriptorBuilder = TableDescriptorBuilder.newBuilder(TableName.valueOf(Fields.TABLE_NAME));
+            TableDescriptor tableDescriptor = tableDescriptorBuilder.build();
             admin.createTable(tableDescriptor);
             admin.close();
         } catch (IOException e) {
@@ -92,7 +92,12 @@ public class Db {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
             Get get = new Get(row);
-            get.setFilter(filterAbstract.getFilter(Bytes.toBytes("FAM")));
+            ArrayList<Filter> list = new ArrayList<Filter>();
+            list.add(filterAbstract.getFilter(Bytes.toBytes("FAM")));
+            list.add(filterAbstract.getFilter(Bytes.toBytes("ONE")));
+            list.add(filterAbstract.getFilter(Bytes.toBytes("TWO")));
+            FilterListWithAND filter = new FilterListWithAND(list);
+            get.setFilter(filter);
             table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,7 +120,7 @@ public class Db {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
             Get get = new Get(row);
-            get.setFilter(filterAbstract.getFilterRecursive(Bytes.toBytes("FAM"), Bytes.toBytes("QUA")));
+            get.setFilter(filterAbstract.getFilterRecursive(Bytes.toBytes("FAM"), Bytes.toBytes("QUA"), "other"));
             table.get(get);
         } catch (IOException e) {
             e.printStackTrace();

@@ -5,12 +5,12 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class FilterConcrete extends FilterAbstract {
     public Filter getFilter(byte[] fam) {
-        return new SingleColumnValueFilter(Bytes.toBytes("Street"), Bytes.toBytes("Name"), CompareOperator.GREATER, Bytes.toBytes("Jo"));
+        return new SingleColumnValueFilter(fam, Bytes.toBytes("Name"), CompareOperator.GREATER, Bytes.toBytes("Jo"));
     }
 
-    public Filter getFilterRecursive(byte[] fam, byte[] qua) {
+    public Filter getFilterRecursive(byte[] fam, byte[] qua, String bla) {
         if (fam == null)
-            return getFilterRecursive(Bytes.toBytes("OTHER"), qua);
+            return getFilterRecursive(Bytes.toBytes("OTHER"), qua, bla);
         return new SingleColumnValueFilter(fam, qua, CompareOperator.GREATER, Bytes.toBytes("Jo"));
     }
 }
