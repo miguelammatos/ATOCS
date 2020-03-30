@@ -92,12 +92,12 @@ public class Db {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
             Get get = new Get(row);
-            ArrayList<Filter> list = new ArrayList<Filter>();
-            list.add(filterAbstract.getFilter(Bytes.toBytes("FAM")));
-            list.add(filterAbstract.getFilter(Bytes.toBytes("ONE")));
-            list.add(filterAbstract.getFilter(Bytes.toBytes("TWO")));
-            FilterListWithAND filter = new FilterListWithAND(list);
-            get.setFilter(filter);
+//            ArrayList<Filter> list = new ArrayList<Filter>();
+//            list.add(filterAbstract.getFilter(Bytes.toBytes("FAM")));
+//            list.add(filterAbstract.getFilter(Bytes.toBytes("ONE")));
+//            list.add(filterAbstract.getFilter(Bytes.toBytes("TWO")));
+//            FilterListWithAND filter = new FilterListWithAND(list);
+            get.setFilter(filterAbstract.getFilter("FAM".getBytes()));
             table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
