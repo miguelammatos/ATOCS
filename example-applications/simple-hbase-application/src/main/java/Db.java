@@ -10,15 +10,17 @@ import java.util.List;
 
 import static org.apache.hadoop.hbase.util.Bytes.toBytes;
 
-public class Db {
+public class Db extends DbAbs{
     private Connection connection;
     private FilterAbstract filterAbstract;
+
 
     public Db() {
         filterAbstract = new FilterConcrete();
         Configuration config = HBaseConfiguration.create();
         try {
             this.connection = ConnectionFactory.createConnection(config);
+            setMyTable(connection.getTable(TableName.valueOf("MyTable")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -90,15 +92,9 @@ public class Db {
 
     public void get(String tableName, byte[] row) {
         try {
-            Table table = connection.getTable(TableName.valueOf(tableName));
             Get get = new Get(row);
-//            ArrayList<Filter> list = new ArrayList<Filter>();
-//            list.add(filterAbstract.getFilter(Bytes.toBytes("FAM")));
-//            list.add(filterAbstract.getFilter(Bytes.toBytes("ONE")));
-//            list.add(filterAbstract.getFilter(Bytes.toBytes("TWO")));
-//            FilterListWithAND filter = new FilterListWithAND(list);
             get.setFilter(filterAbstract.getFilter("FAM".getBytes()));
-            table.get(get);
+            getMyTable().get(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
