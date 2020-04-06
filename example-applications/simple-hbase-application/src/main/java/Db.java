@@ -5,18 +5,13 @@ import org.apache.hadoop.hbase.filter.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.apache.hadoop.hbase.util.Bytes.toBytes;
 
 public class Db extends DbAbs{
     private Connection connection;
-    private FilterAbstract filterAbstract;
+    private final FilterAbstract filterAbstract = new FilterConcrete();
 
 
     public Db() {
-        filterAbstract = new FilterConcrete();
         Configuration config = HBaseConfiguration.create();
         try {
             this.connection = ConnectionFactory.createConnection(config);
@@ -90,6 +85,7 @@ public class Db extends DbAbs{
         return null;
     }
 
+    @Override
     public void get(String tableName, byte[] row) {
         try {
             Get get = new Get(row);
@@ -104,12 +100,17 @@ public class Db extends DbAbs{
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
             Get get = new Get(row);
+            get = getObj(get);
             FilterList filterList = new FilterList(filterAbstract.getFilter(Bytes.toBytes("FAM")), filterAbstract.getFilter(Bytes.toBytes("FAM")));
             get.setFilter(filterList);
             table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    Get getObj(Get get) {
+        return get;
     }
 
     public void getRecursive(String tableName, byte[] row) {
