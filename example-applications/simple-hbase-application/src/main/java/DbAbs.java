@@ -20,9 +20,11 @@ public abstract class DbAbs {
 
     public abstract void put(String tableName, byte[] row, byte[] columnFamily, byte[] columnQualifier, byte[] value) ;
 
-    public abstract Get getGetOp(String row) ;
+    public abstract Get getGetOp(String row);
 
-    public abstract Result get(String tableName, Get get) ;
+    public abstract Get getObjWithFilter(Get get);
+
+    public abstract Result getWithGetOp(String tableName) ;
 
     public abstract void get(String tableName, byte[] row) ;
 

@@ -28,8 +28,13 @@ public class DBWrapper extends DbAbs {
         return db.getGetOp(row);
     }
 
-    public Result get(String tableName, Get get) {
-        return db.get(tableName, get);
+    @Override
+    public Get getObjWithFilter(Get get) {
+        return db.getObjWithFilter(get);
+    }
+
+    public Result getWithGetOp(String tableName) {
+        return db.getWithGetOp(tableName);
     }
 
     public void get(String tableName, byte[] row) {

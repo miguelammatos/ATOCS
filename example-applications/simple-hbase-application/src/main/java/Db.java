@@ -74,10 +74,18 @@ public class Db extends DbAbs{
         return get;
     }
 
-    public Result get(String tableName, Get get) {
+
+    public Get getObjWithFilter(Get get) {
+        get.setFilter(filterAbstract.getFilter(Bytes.toBytes("User")));
+        return get;
+    }
+
+    public Result getWithGetOp(String tableName) {
         try {
+            Get get = new Get(Bytes.toBytes("row1"));
             Table table = connection.getTable(TableName.valueOf(tableName));
-            get.setFilter(filterAbstract.getFilter(Bytes.toBytes("User")));
+            if (get.getFilter() == null)
+                get = getObjWithFilter(get);
             return table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
@@ -100,7 +108,7 @@ public class Db extends DbAbs{
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
             Get get = new Get(row);
-            get = getObj(get);
+            get = getObjWithFilter(get);
             FilterList filterList = new FilterList(filterAbstract.getFilter(Bytes.toBytes("FAM")), filterAbstract.getFilter(Bytes.toBytes("FAM")));
             get.setFilter(filterList);
             table.get(get);
@@ -109,15 +117,12 @@ public class Db extends DbAbs{
         }
     }
 
-    Get getObj(Get get) {
-        return get;
-    }
-
     public void getRecursive(String tableName, byte[] row) {
         try {
             Table table = connection.getTable(TableName.valueOf(tableName));
-            Get get = new Get(row);
-            get.setFilter(filterAbstract.getFilterRecursive(Bytes.toBytes("FAM"), Bytes.toBytes("QUA"), "other"));
+            Get g = new Get(row);
+            g.setFilter(filterAbstract.getFilterRecursive(Bytes.toBytes("FAM"), Bytes.toBytes("QUA"), "other"));
+            Get get = g;
             table.get(get);
         } catch (IOException e) {
             e.printStackTrace();
