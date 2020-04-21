@@ -6,8 +6,8 @@ public class App2 {
 
         db.createTable(Fields.TABLE_NAME);
 
-        db.getWithGetOp(Fields.TABLE_NAME);
-//        db.get(Fields.TABLE_NAME, Bytes.toBytes("row1"));
+//        db.getWithGetOp(Fields.TABLE_NAME);
+        db.get(Fields.TABLE_NAME, Bytes.toBytes("row1"));
 //        db.getWithFilterList(Fields.TABLE_NAME, Bytes.toBytes("row1"));
 //        db.getRecursive(Fields.TABLE_NAME, Bytes.toBytes("row1"));
 

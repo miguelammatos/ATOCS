@@ -9,6 +9,7 @@ import java.io.IOException;
 public class Db extends DbAbs{
     private Connection connection;
     private final FilterAbstract filterAbstract = new FilterConcrete();
+    private Table t;
 
 
     public Db() {
@@ -16,6 +17,7 @@ public class Db extends DbAbs{
         try {
             this.connection = ConnectionFactory.createConnection(config);
             setMyTable(connection.getTable(TableName.valueOf("MyTable")));
+            t = connection.getTable(TableName.valueOf("TTable"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,6 +81,9 @@ public class Db extends DbAbs{
         get.setFilter(filterAbstract.getFilter(Bytes.toBytes("User")));
         return get;
     }
+    public void getObjWithFilter2(Get get) {
+        get.setFilter(filterAbstract.getFilter(Bytes.toBytes("User")));
+    }
 
     public Result getWithGetOp(String tableName) {
         try {
@@ -96,8 +101,11 @@ public class Db extends DbAbs{
     @Override
     public void get(String tableName, byte[] row) {
         try {
+            String cenas[] = new String[2];
+            cenas[0] = "COL1";
+            cenas[1] = "COL2";
             Get get = new Get(row);
-            get.setFilter(filterAbstract.getFilter("FAM".getBytes()));
+            get.setFilter(filterAbstract.getFilter(cenas[1].getBytes()));
             getMyTable().get(get);
         } catch (IOException e) {
             e.printStackTrace();
@@ -106,12 +114,12 @@ public class Db extends DbAbs{
 
     public void getWithFilterList(String tableName, byte[] row) {
         try {
-            Table table = connection.getTable(TableName.valueOf(tableName));
+            t = connection.getTable(TableName.valueOf("SpecificTable"));
             Get get = new Get(row);
-            get = getObjWithFilter(get);
+            getObjWithFilter2(get);
             FilterList filterList = new FilterList(filterAbstract.getFilter(Bytes.toBytes("FAM")), filterAbstract.getFilter(Bytes.toBytes("FAM")));
             get.setFilter(filterList);
-            table.get(get);
+            t.get(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
