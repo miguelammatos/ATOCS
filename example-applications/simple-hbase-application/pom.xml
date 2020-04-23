@@ -44,6 +44,11 @@
             <artifactId>hbase-common</artifactId>
             <version>2.2.3</version>
         </dependency>
+        <dependency>
+            <groupId>pt.uminho.haslab</groupId>
+            <artifactId>safeclient</artifactId>
+            <version>2.2.0</version>
+        </dependency>
     </dependencies>
 
 </project>

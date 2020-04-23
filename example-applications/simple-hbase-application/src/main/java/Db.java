@@ -3,24 +3,32 @@ import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.filter.*;
 import org.apache.hadoop.hbase.util.Bytes;
+import pt.uminho.haslab.safeclient.secureTable.CryptoTable;
 
 import java.io.IOException;
 
 public class Db extends DbAbs{
     private Connection connection;
-    private final FilterAbstract filterAbstract = new FilterConcrete();
+    private FilterAbstract filterAbstract = new FilterConcrete();
     private Table t;
 
 
-    public Db() {
+    public Db(){
         Configuration config = HBaseConfiguration.create();
         try {
             this.connection = ConnectionFactory.createConnection(config);
             setMyTable(connection.getTable(TableName.valueOf("MyTable")));
-            t = connection.getTable(TableName.valueOf("TTable"));
+            if (Fields.TABLE_NAME.equals("")) {
+                t = new CryptoTable(HBaseConfiguration.create(), "TTTT");
+            } else
+                t = connection.getTable(TableName.valueOf("TTable"));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setFilter(FilterAbstract filter) {
+        filterAbstract = filter;
     }
 
     public void createTable(String tableName) {
@@ -101,12 +109,9 @@ public class Db extends DbAbs{
     @Override
     public void get(String tableName, byte[] row) {
         try {
-            String cenas[] = new String[2];
-            cenas[0] = "COL1";
-            cenas[1] = "COL2";
             Get get = new Get(row);
-            get.setFilter(filterAbstract.getFilter(cenas[1].getBytes()));
-            getMyTable().get(get);
+            get.setFilter(filterAbstract.getFilter("FAM".getBytes()));
+            t.get(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
