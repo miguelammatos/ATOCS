@@ -6,6 +6,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import pt.uminho.haslab.safeclient.secureTable.CryptoTable;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Db extends DbAbs{
     private Connection connection;
@@ -109,9 +111,17 @@ public class Db extends DbAbs{
     @Override
     public void get(String tableName, byte[] row) {
         try {
-            Get get = new Get(row);
-            get.setFilter(filterAbstract.getFilter("FAM".getBytes()));
-            t.get(get);
+            Scan scan = new Scan();
+            if (tableName.equals(""))
+                scan.addColumn("FAM".getBytes(), "QUA".getBytes());
+//            else {
+//                if (tableName.equals("ola"))
+//                    scan.addColumn("FAM".getBytes(), "ADEUS".getBytes());
+//                else
+//                    scan.addColumn("FAM".getBytes(), "ADE".getBytes());
+//            }
+
+            t.getScanner(scan);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -141,4 +151,35 @@ public class Db extends DbAbs{
             e.printStackTrace();
         }
     }
+
+    public void scan(String tableName, Scan s) {
+        try {
+            int x = (int) Math.random();
+            if (x == 0)
+                s.addColumn("FAM".getBytes(), "OLA".getBytes());
+            else {
+                s.addColumn("FAM".getBytes(), "ADEUS".getBytes());
+                t.getScanner(s);
+            }
+
+//            if (x == 0)
+//                s.addColumn("FAM".getBytes(), "ADEUS".getBytes());
+
+//            if (s.hasFamilies())
+//                s.addColumn("FAM".getBytes(), "OLA".getBytes());
+//            else
+//                s.addColumn("FAM".getBytes(), "QUA".getBytes());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bla(Scan s) {
+        if (s.hasFamilies())
+            s.addColumn("FAM".getBytes(), "QUA".getBytes());
+        else
+            s.addColumn("FAM".getBytes(), "QUA".getBytes());
+    }
+
 }

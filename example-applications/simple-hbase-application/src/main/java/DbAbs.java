@@ -31,4 +31,6 @@ public abstract class DbAbs {
     public abstract void getWithFilterList(String tableName, byte[] row) ;
 
     public abstract void getRecursive(String tableName, byte[] row) ;
+
+    public abstract void scan(String tableName, Scan s);
 }

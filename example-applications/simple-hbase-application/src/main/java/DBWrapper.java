@@ -48,4 +48,8 @@ public class DBWrapper extends DbAbs {
     public void getRecursive(String tableName, byte[] row) {
         db.getRecursive(tableName, row);
     }
+
+    public void scan(String tableName, Scan s) {
+        db.scan(tableName, s);
+    }
 }
