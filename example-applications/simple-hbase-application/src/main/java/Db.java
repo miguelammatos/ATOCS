@@ -158,9 +158,10 @@ public class Db extends DbAbs{
             if (x == 0)
                 s.addColumn("FAM".getBytes(), "OLA".getBytes());
             else {
-                s.addColumn("FAM".getBytes(), "ADEUS".getBytes());
-                t.getScanner(s);
+                s.addColumn("FAM".getBytes(), "BLA".getBytes());
             }
+            s.setFilter(new SingleColumnValueFilter("FAM".getBytes(), Bytes.toBytes("ADEUS"), CompareOperator.GREATER, Bytes.toBytes("Jo")));
+            t.getScanner(s);
 
 //            if (x == 0)
 //                s.addColumn("FAM".getBytes(), "ADEUS".getBytes());
