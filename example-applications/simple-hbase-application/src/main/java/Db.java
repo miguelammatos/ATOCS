@@ -6,8 +6,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import pt.uminho.haslab.safeclient.secureTable.CryptoTable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Db extends DbAbs{
     private Connection connection;
