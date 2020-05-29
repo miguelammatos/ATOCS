@@ -3,7 +3,6 @@ import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.filter.*;
 import org.apache.hadoop.hbase.util.Bytes;
-import pt.uminho.haslab.safeclient.secureTable.CryptoTable;
 
 import java.io.IOException;
 
@@ -19,7 +18,6 @@ public class Db extends DbAbs{
             this.connection = ConnectionFactory.createConnection(config);
             setMyTable(connection.getTable(TableName.valueOf("MyTable")));
             if (Fields.TABLE_NAME.equals("")) {
-                t = new CryptoTable(HBaseConfiguration.create(), "TTTT");
             } else
                 t = connection.getTable(TableName.valueOf("TTable"));
         } catch (IOException e) {
