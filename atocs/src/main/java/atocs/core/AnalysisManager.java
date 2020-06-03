@@ -6,7 +6,6 @@ import soot.*;
 import soot.jimple.SwitchStmt;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
-import atocs.Config;
 import atocs.core.api.API;
 import atocs.core.exceptions.SystemException;
 
@@ -16,11 +15,11 @@ import java.util.Set;
 
 public class AnalysisManager extends SceneTransformer {
     private final Logger logger = LoggerFactory.getLogger(AnalysisManager.class);
-    private final Config config;
+    private final AtocsConfig atocsConfig;
 
-    public AnalysisManager(Config config) {
+    AnalysisManager(AtocsConfig atocsConfig) {
         super();
-        this.config = config;
+        this.atocsConfig = atocsConfig;
     }
 
     /**
@@ -42,16 +41,16 @@ public class AnalysisManager extends SceneTransformer {
      * @throws SystemException when any type of error occurs.
      */
     void execute() throws SystemException {
-        API.getInstance().init(config.getApiFilePath());
-        config.getDatabasePlugin().setApi();
+        API.getInstance().init(atocsConfig.getApiFilePath());
+        atocsConfig.getDatabasePlugin().setApi();
 
-//        test();
+//        test(); //TODO remove this
 
         Inspector inspector = new Inspector();
         Set<SootMethod> methodsToAnalyse = inspector.getMethodsWithDbInteractions();
         printMethodsToAnalyse(methodsToAnalyse);
 
-        CodeAnalyser analyser = new CodeAnalyser(config.getDatabasePlugin());
+        CodeAnalyser analyser = new CodeAnalyser(atocsConfig.getDatabasePlugin());
         analyser.analyse(methodsToAnalyse);
 
         Configurator.getInstance().showReport();

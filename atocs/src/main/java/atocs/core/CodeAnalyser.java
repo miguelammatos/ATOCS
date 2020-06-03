@@ -21,12 +21,12 @@ import static atocs.core.Constants.*;
 public class CodeAnalyser {
     private static final Logger logger = LoggerFactory.getLogger(CodeAnalyser.class);
 
-    private final DatabasePlugin dbModule;
+    private final DatabasePlugin dbPlugin;
 
     private static final Map<SootField, List<ValueState>> fieldValues = new HashMap<>();
 
-    CodeAnalyser(DatabasePlugin dbModule) {
-        this.dbModule = dbModule;
+    CodeAnalyser(DatabasePlugin dbPlugin) {
+        this.dbPlugin = dbPlugin;
     }
 
     /**
@@ -57,8 +57,9 @@ public class CodeAnalyser {
                 if (API.getInstance().isApiMethod(invokeExpr.getMethod())) {
                     List<SootMethod> methodChain = new ArrayList<>();
                     methodChain.add(method);
-                    dbModule.analyseDbInteraction(new InvokeExprState(invokeExpr, method, stackManager.getUnitStack(unit),
-                            null, methodChain, stackManager.getUnitStack(unit).getLastestStmt(), null));
+                    dbPlugin.analyseDbInteraction(new InvokeExprState(invokeExpr, method,
+                            stackManager.getUnitStack(unit), null, methodChain,
+                            stackManager.getUnitStack(unit).getLastestStmt(), null));
                 }
             }
         }
@@ -217,6 +218,17 @@ public class CodeAnalyser {
      */
     public static List<ValueState> getObjsAddedToList(ValueState listRefState) {
         return NativeJavaAnalyser.getObjsAddedToList(listRefState);
+    }
+
+    /**
+     * Obtains the object references added to a Set. Supports Set, HashSet and TreeSet with the following methods: add,
+     * set and addAll.
+     *
+     * @param setRefState set reference state.
+     * @return all object references added to a Set, if any.
+     */
+    public static List<ValueState> getObjsAddedToSet(ValueState setRefState) {
+        return NativeJavaAnalyser.getObjsAddedToSet(setRefState);
     }
 
     /**
@@ -386,9 +398,9 @@ public class CodeAnalyser {
     }
 
     /**
-     * Finds all method invoke expressions that match a certain method signature (class name and method name) assigned
-     * to a given value. This is an iterative process since the variable can be assigned to a method invocation which
-     * can also return another method invocation and so forth.
+     * Finds all method invocations that match a certain method signature (class name and method name) which are
+     * assigned to the given value. This is an iterative process since the variable can be assigned to a method
+     * invocation which can also return another method invocation and so forth.
      *
      * @param className the name of the class that declares the method to search.
      * @param methodName the name of the method invocation to search.

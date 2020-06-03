@@ -25,7 +25,7 @@ public class Configurator {
         return instance;
     }
 
-    public void init(DatabasePlugin db, List<Cipher> ciphers) {
+    void init(DatabasePlugin db, List<Cipher> ciphers) {
         this.db = db;
         this.ciphers = ciphers;
     }
@@ -65,12 +65,12 @@ public class Configurator {
         tableList.add(field);
     }
 
-    public Map<String, Map<DbField, List<Requirement>>> getUniqueRequirements() {
+    Map<String, Map<DbField, List<Requirement>>> getUniqueRequirements() {
         db.removeOverlappingRequirements(uniqueRequirementsMap);
         return uniqueRequirementsMap;
     }
 
-    public Map<String, Set<DbField>> getUniqueObtainedFields() {
+    Map<String, Set<DbField>> getUniqueObtainedFields() {
         db.removeOverlappingObtainedFields(obtainedFields);
         return obtainedFields;
     }

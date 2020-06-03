@@ -1,6 +1,5 @@
-package atocs;
+package atocs.core;
 
-import atocs.core.Configurator;
 import atocs.core.ciphers.*;
 import atocs.core.exceptions.ApplicationConfigurationException;
 import atocs.core.exceptions.DatabaseConfigurationException;
@@ -13,7 +12,7 @@ import atocs.plugins.hbase98.HBase98Plugin;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Config {
+public class AtocsConfig {
     private String database;
     private List<String> directoriesToAnalyse;
     private List<String> entryPoints;
@@ -22,7 +21,7 @@ public class Config {
     private List<String> databaseLibPaths;
     private DatabasePlugin databasePlugin;
 
-    public Config(String database, List<String> directoriesToAnalyse, List<String> entryPoints) throws SystemException {
+    AtocsConfig(String database, List<String> directoriesToAnalyse, List<String> entryPoints) throws SystemException {
         if (database == null || directoriesToAnalyse == null || entryPoints == null)
             throw new ApplicationConfigurationException();
         this.database = database;
@@ -61,27 +60,27 @@ public class Config {
         databaseLibPaths = databasePlugin.getLibPaths();
     }
 
-    public String getDatabase() {
+    String getDatabase() {
         return database;
     }
 
-    public List<String> getDirectoriesToAnalyse() {
+    List<String> getDirectoriesToAnalyse() {
         return directoriesToAnalyse;
     }
 
-    public List<String> getEntryPoints() {
+    List<String> getEntryPoints() {
         return entryPoints;
     }
 
-    public String getClassPath() {
+    String getClassPath() {
         return classPath;
     }
 
-    public String getApiFilePath() {
+    String getApiFilePath() {
         return apiFilePath;
     }
 
-    public DatabasePlugin getDatabasePlugin() {
+    DatabasePlugin getDatabasePlugin() {
         return databasePlugin;
     }
 

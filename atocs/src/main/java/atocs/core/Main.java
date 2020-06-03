@@ -1,11 +1,9 @@
-package atocs;
+package atocs.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.*;
 import soot.options.Options;
-import atocs.core.AnalysisManager;
-import atocs.core.Parser;
 import atocs.core.exceptions.SystemException;
 
 import java.util.ArrayList;
@@ -32,33 +30,30 @@ public class Main
         }
     }
 
-    static void executeAnalysis(Config config) {
+    static void executeAnalysis(AtocsConfig atocsConfig) {
         List<String> list = new ArrayList<>();
-        list.add("-cp"); list.add(config.getClassPath()); // sets the class path for Soot
+        list.add("-cp"); list.add(atocsConfig.getClassPath()); // sets the class path for Soot
         list.add("-pp"); // Prepend the given soot classpath to the default classpath
         list.add("-f"); list.add("n"); // Do not generate sootOutput
         list.add("-w"); // Whole program analysis, necessary for using Transformer
         list.add("-src-prec"); list.add("class"); // Specify type of source file. Possibly use only-class
         list.add("-allow-phantom-refs"); // So that the program still runs in case some classes are not found
-        for (String directory : config.getDirectoriesToAnalyse()) {
+        for (String directory : atocsConfig.getDirectoriesToAnalyse()) {
             list.add("-process-dir");
             list.add(directory);
         }
 
-        AnalysisManager analysisManager = new AnalysisManager(config);
+        AnalysisManager analysisManager = new AnalysisManager(atocsConfig);
 
         // Add transformer to appropriate Pack in PackManager. PackManager will run all Packs when main function of Soot is called
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.dfa", analysisManager));
 
-        // Call main function with arguments
-//        soot.Main.main(list.toArray(new String[list.size()]));
-
         Options.v().parse(list.toArray(new String[list.size()]));
         Scene.v().loadNecessaryClasses();
 
-        if (!config.getEntryPoints().isEmpty()) {
+        if (!atocsConfig.getEntryPoints().isEmpty()) {
             List<SootMethod> entryPoints = new ArrayList<>();
-            for (String entryPoint : config.getEntryPoints())
+            for (String entryPoint : atocsConfig.getEntryPoints())
                 entryPoints.add(Scene.v().getSootClass(entryPoint).getMethodByName("main"));
             Scene.v().setEntryPoints(entryPoints);
         }

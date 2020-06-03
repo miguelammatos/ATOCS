@@ -6,7 +6,7 @@ public abstract class DbField {
     private final String table;
     private final String name;
 
-    public DbField(String table, String name) {
+    DbField(String table, String name) {
         this.table = table;
         this.name = name;
     }

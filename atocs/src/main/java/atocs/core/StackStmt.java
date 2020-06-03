@@ -10,38 +10,38 @@ public class StackStmt {
     private List<ConditionalStmt> conditionalStmts = new ArrayList<>();
     private final SootMethod scopeMethod;
 
-    public StackStmt(Stmt stmt, SootMethod scopeMethod) {
+    StackStmt(Stmt stmt, SootMethod scopeMethod) {
         this.stmt = stmt;
         this.scopeMethod = scopeMethod;
     }
 
-    public StackStmt(Stmt stmt, SootMethod scopeMethod, List<ConditionalStmt> conditionalStmts) {
+    StackStmt(Stmt stmt, SootMethod scopeMethod, List<ConditionalStmt> conditionalStmts) {
         this.stmt = stmt;
         this.scopeMethod = scopeMethod;
         this.conditionalStmts = new ArrayList<>(conditionalStmts);
     }
 
-    public Stmt getStmt() {
+    Stmt getStmt() {
         return stmt;
     }
 
-    public List<ConditionalStmt> getConditionalStmts() {
+    List<ConditionalStmt> getConditionalStmts() {
         return conditionalStmts;
     }
 
-    public SootMethod getScopeMethod() {
+    SootMethod getScopeMethod() {
         return scopeMethod;
     }
 
-    public void setConditionalStmts(List<ConditionalStmt> conditionalStmts) {
+    void setConditionalStmts(List<ConditionalStmt> conditionalStmts) {
         this.conditionalStmts = new ArrayList<>(conditionalStmts);
     }
 
-    public int numConditionalStmts() {
+    int numConditionalStmts() {
         return conditionalStmts.size();
     }
 
-    public boolean insideConditionalStmt() {
+    boolean insideConditionalStmt() {
         return !conditionalStmts.isEmpty();
     }
 

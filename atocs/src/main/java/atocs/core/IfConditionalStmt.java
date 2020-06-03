@@ -7,7 +7,7 @@ import java.util.Objects;
 public class IfConditionalStmt extends ConditionalStmt {
     private IfConditionalStmt dependent;
 
-    public IfConditionalStmt(StackStmt stackStmt, Unit target) {
+    IfConditionalStmt(StackStmt stackStmt, Unit target) {
         super(stackStmt, target);
     }
 
@@ -15,7 +15,7 @@ public class IfConditionalStmt extends ConditionalStmt {
         return dependent;
     }
 
-    public void addNewDependent(IfConditionalStmt conditionalStmt) {
+    void addNewDependent(IfConditionalStmt conditionalStmt) {
         this.dependent = conditionalStmt;
     }
 

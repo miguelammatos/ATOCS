@@ -18,7 +18,7 @@
                     <execution><goals><goal>exec</goal></goals></execution>
                 </executions>
                 <configuration>
-                    <mainClass>atocs.Main</mainClass>
+                    <mainClass>atocs.core.Main</mainClass>
                 </configuration>
             </plugin>
             <plugin>

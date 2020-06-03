@@ -38,15 +38,15 @@ public class Stack {
         return currentStmt;
     }
 
-    public StackStmt getLastestStmt() {
+    StackStmt getLastestStmt() {
         return statements.isEmpty() ? null : statements.get(statements.size() - 1);
     }
 
-    public SootMethod getScopeMethod() {
+    SootMethod getScopeMethod() {
         return scopeMethod;
     }
 
-    public List<StackStmt> getStatements() {
+    List<StackStmt> getStatements() {
         return statements;
     }
 
@@ -68,7 +68,7 @@ public class Stack {
         return statements.contains(stackStmt);
     }
 
-    public List<ConditionalStmt> getConditionalStmts() {
+    List<ConditionalStmt> getConditionalStmts() {
         return conditionalStmts;
     }
 
@@ -146,7 +146,7 @@ public class Stack {
         return getCurrentConditionalStmtsAfter(after.get(after.size() - 1));
     }
 
-    public List<ConditionalStmt> getCurrentConditionalStmtsAfter(ConditionalStmt last) {
+    List<ConditionalStmt> getCurrentConditionalStmtsAfter(ConditionalStmt last) {
         List<ConditionalStmt> conditionalStmts = getCurrentConditionalStmts();
         int lastIndex = conditionalStmts.indexOf(last);
         if (lastIndex == -1)

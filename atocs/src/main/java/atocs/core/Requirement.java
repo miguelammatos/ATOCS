@@ -33,7 +33,7 @@ public class Requirement {
     private DbField field;
     private Property property;
 
-    public Requirement(String operation, String table, DbField field, Property property) {
+    Requirement(String operation, String table, DbField field, Property property) {
         this.operation = operation;
         this.table = table;
         this.field = field;

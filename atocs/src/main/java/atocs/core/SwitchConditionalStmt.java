@@ -11,7 +11,7 @@ public class SwitchConditionalStmt extends ConditionalStmt {
     private List<SwitchConditionalStmt> dependents = new ArrayList<>();
     private boolean isDefaultCase;
 
-    public SwitchConditionalStmt(StackStmt stackStmt, Unit target, SwitchStmt switchStmt) {
+    SwitchConditionalStmt(StackStmt stackStmt, Unit target, SwitchStmt switchStmt) {
         super(stackStmt, target);
         this.isDefaultCase = switchStmt.getDefaultTarget().equals(stackStmt.getStmt());
     }
@@ -20,7 +20,7 @@ public class SwitchConditionalStmt extends ConditionalStmt {
         return dependents;
     }
 
-    public void addNewDependent(SwitchConditionalStmt conditionalStmt) {
+    void addNewDependent(SwitchConditionalStmt conditionalStmt) {
         dependents.add(conditionalStmt);
     }
 
@@ -32,7 +32,7 @@ public class SwitchConditionalStmt extends ConditionalStmt {
         }
     }
 
-    public boolean isDefaultCase() {
+    boolean isDefaultCase() {
         return isDefaultCase;
     }
 

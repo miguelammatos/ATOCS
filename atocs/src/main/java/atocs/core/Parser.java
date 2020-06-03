@@ -3,7 +3,6 @@ package atocs.core;
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import soot.*;
-import atocs.Config;
 import atocs.core.api.API;
 import atocs.core.api.Argument;
 import atocs.core.exceptions.FileException;
@@ -27,6 +26,7 @@ public class Parser {
     private static final String FLOAT_TYPE = "float";
     private static final String CHAR_TYPE = "char";
     private static final String STRING_TYPE = "string";
+    private static final String STRING_CLASS = "java.lang.String";
 
     private Parser() {}
 
@@ -41,7 +41,7 @@ public class Parser {
      *
      * @param configFile path of the yaml file with the application information.
      */
-    public Config parseConfigFile(String configFile) throws SystemException {
+    AtocsConfig parseConfigFile(String configFile) throws SystemException {
         try {
             YamlReader reader = new YamlReader(new FileReader(configFile));
             Map configMap = (Map) reader.read();
@@ -58,7 +58,7 @@ public class Parser {
                     entryPoints.add((String) entryPoint);
                 }
             }
-            return new Config(databaseName, directoriesToAnalyse, entryPoints);
+            return new AtocsConfig(databaseName, directoriesToAnalyse, entryPoints);
         } catch (FileNotFoundException fnfe) {
             throw new FileException(configFile);
         } catch (YamlException ye) {
@@ -117,7 +117,7 @@ public class Parser {
      * @param arguments list of arguments provided by the yaml file.
      * @return  list of arguments.
      */
-    List<Argument> createArgumentList(List arguments) { // TODO set arg types as const
+    List<Argument> createArgumentList(List arguments) {
         List<Argument> argumentList = new ArrayList<>();
         for (Object argObj : arguments) {
             Map argMap = (Map) argObj; //Map representing an argument, with type and tag
@@ -148,7 +148,7 @@ public class Parser {
                     arg = new Argument(CharType.v(), tag);
                     break;
                 case STRING_TYPE:
-                    arg = new Argument(RefType.v("java.lang.String"), tag);
+                    arg = new Argument(RefType.v(STRING_CLASS), tag);
                     break;
                 default: // considered to be an Object where type is the complete name of the corresponding class
                     arg = new Argument(RefType.v(type), tag);
