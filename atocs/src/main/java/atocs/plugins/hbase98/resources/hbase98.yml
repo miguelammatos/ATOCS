@@ -1,0 +1,44 @@
+#HBase system.core.api.API version 0.98.6-hadoop2
+#
+#Format:
+#---
+#className: fullname
+#methods:
+#  - name: methodname
+#    operation: type of database operation performed
+#    args:
+#      - - type: fieldType  # - - represents a set of arguments for the method defined above
+#          tag: ...
+#        - type: fieldType
+#          tag: ...
+#      - - type: fieldType # - - this is a new set of arguments for the method defined above
+#          tag: ...
+
+className: org.apache.hadoop.hbase.client.HTable
+methods:
+  - name: put
+    operation: PUT
+    args:
+      - - type: org.apache.hadoop.hbase.client.Put
+          tag: NA
+      - - type: java.util.List
+          tag: NA
+  - name: get
+    operation: GET
+    args:
+      - - type: org.apache.hadoop.hbase.client.Get
+          tag: NA
+      - - type: java.util.List
+          tag: NA
+  - name: getScanner
+    operation: SCAN
+    args:
+      - - type: org.apache.hadoop.hbase.client.Scan
+          tag: NA
+  - name: delete
+    operation: DELETE
+    args:
+      - - type: org.apache.hadoop.hbase.client.Delete
+          tag: NA
+      - - type: java.util.List
+          tag: NA

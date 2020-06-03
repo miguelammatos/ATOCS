@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%style{%d{HH:mm:ss.SSS}}{normal} [%highlight{%level}{ERROR=red bright, WARN=yellow bright, INFO=blue bright, DEBUG=green bright, TRACE=bright}] %style{%logger{5}.%M() @%L}{blue} - %highlight{%msg%n%throwable}{ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="warn">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <logger name="soot" level="warn">
+            <AppenderRef ref="Console"/>
+        </logger>
+    </Loggers>
+</Configuration>
