@@ -2,6 +2,7 @@ package atocs.plugins.hbasecommon;
 
 import atocs.core.Configurator;
 import atocs.core.DbField;
+import atocs.core.Property;
 import atocs.core.Requirement;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class RequirementGenerator {
     public void generatePutRequirement(List<String> tableNames) {
         for (String tableName : tableNames)
             configurator.addRequirement("PUT", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Requirement.Property.EQUALITY);
+                    Property.EQUALITY);
     }
 
     /**
@@ -32,7 +33,7 @@ public class RequirementGenerator {
     public void generateGetRequirement(List<String> tableNames) {
         for (String tableName : tableNames)
             configurator.addRequirement("GET", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Requirement.Property.EQUALITY);
+                    Property.EQUALITY);
     }
 
     /**
@@ -43,7 +44,7 @@ public class RequirementGenerator {
     public void generateScanRequirement(List<String> tableNames) {
         for (String tableName : tableNames)
             configurator.addRequirement("SCAN", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Requirement.Property.ORDER);
+                    Property.ORDER);
     }
 
     /**
@@ -54,7 +55,7 @@ public class RequirementGenerator {
     public void generateDeleteRequirement(List<String> tableNames) {
         for (String tableName : tableNames)
             configurator.addRequirement("DELETE", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Requirement.Property.EQUALITY);
+                    Property.EQUALITY);
     }
 
     /**
@@ -163,21 +164,23 @@ public class RequirementGenerator {
             case HBaseInfo.BINARY_PREFIX_COMPARATOR:
             case HBaseInfo.BIT_COMPARATOR:
             case HBaseInfo.SUB_STRING_COMPARATOR:
+                configurator.addRequirement(filterName, tableName, field, Property.PARTIAL);
+                break;
             case HBaseInfo.REGEX_STRING_COMPARATOR:
-                configurator.addRequirement(filterName, tableName, field, Requirement.Property.PARTIAL);
+                configurator.addRequirement(filterName, tableName, field, Property.REGEX);
                 break;
             default:
                 for (String compareOp : compareOps) {
                     switch (compareOp) {
                         case "EQUAL":
                         case "NOT_EQUAL":
-                            configurator.addRequirement(filterName, tableName, field, Requirement.Property.EQUALITY);
+                            configurator.addRequirement(filterName, tableName, field, Property.EQUALITY);
                             break;
                         case "LESS":
                         case "LESS_OR_EQUAL":
                         case "GREATER_OR_EQUAL":
                         case "GREATER":
-                            configurator.addRequirement(filterName, tableName, field, Requirement.Property.ORDER);
+                            configurator.addRequirement(filterName, tableName, field, Property.ORDER);
                             break;
                     }
                 }
@@ -193,7 +196,7 @@ public class RequirementGenerator {
     public void generateKeySearchRequirement(String filterName, List<String> tableNames) {
         for (String tableName : tableNames)
             configurator.addRequirement(filterName, tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Requirement.Property.PARTIAL);
+                    Property.PARTIAL);
     }
 
     /**
@@ -205,7 +208,7 @@ public class RequirementGenerator {
     public void generateKeyOrderRequirement(String filterName, List<String> tableNames) {
         for (String tableName : tableNames)
             configurator.addRequirement(filterName, tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Requirement.Property.ORDER);
+                    Property.ORDER);
     }
 
     /**
@@ -217,7 +220,7 @@ public class RequirementGenerator {
     public void generateColumnSearchRequirement(String filterName, List<String> tableNames) {
         for (String tableName : tableNames)
             configurator.addRequirement(filterName, tableName, new HBaseField(tableName,
-                            HBaseField.SpecialField.COLUMN_NAMES), Requirement.Property.PARTIAL);
+                            HBaseField.SpecialField.COLUMN_NAMES), Property.PARTIAL);
     }
 
     /**

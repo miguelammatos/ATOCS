@@ -1,16 +1,13 @@
 package atocs.core;
 
-import atocs.core.ciphers.*;
-import atocs.core.exceptions.ApplicationConfigurationException;
-import atocs.core.exceptions.DatabaseConfigurationException;
-import atocs.core.exceptions.DatabaseModuleNotFoundException;
-import atocs.core.exceptions.SystemException;
+import atocs.core.exceptions.*;
 import atocs.plugins.DatabasePlugin;
 import atocs.plugins.hbase2.HBase2Plugin;
 import atocs.plugins.hbase98.HBase98Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class AtocsConfig {
     private String database;
@@ -21,25 +18,21 @@ public class AtocsConfig {
     private List<String> databaseLibPaths;
     private DatabasePlugin databasePlugin;
 
-    AtocsConfig(String database, List<String> directoriesToAnalyse, List<String> entryPoints) throws SystemException {
-        if (database == null || directoriesToAnalyse == null || entryPoints == null)
-            throw new ApplicationConfigurationException();
+    AtocsConfig(String database, List<String> directoriesToAnalyse, List<String> entryPoints,
+                List<String> orderedCiphers, Map<String, List<String>> supportedCiphers) throws SystemException {
+        assertArguments(database, directoriesToAnalyse, entryPoints, orderedCiphers, supportedCiphers);
         this.database = database;
         this.directoriesToAnalyse = directoriesToAnalyse;
         this.entryPoints = entryPoints;
-        setDatabaseInfo(database);
-        if (apiFilePath == null || apiFilePath.isEmpty() || databaseLibPaths == null || databaseLibPaths.isEmpty())
-            throw new DatabaseConfigurationException(database);
-        classPath = appendDoubleDotsToStrings(this.directoriesToAnalyse) + appendDoubleDotsToStrings(this.databaseLibPaths);
-//        this.directoriesToAnalyse.addAll(databaseLibPaths); // TODO check if this is the best option
 
-        List<Cipher> ciphers = new ArrayList<>();
-        ciphers.add(STD.getInstance());
-        ciphers.add(DET.getInstance());
-        ciphers.add(OPE.getInstance());
-        ciphers.add(FPE.getInstance());
-        ciphers.add(HOM.getInstance());
-        Configurator.getInstance().init(databasePlugin, ciphers);
+        setDatabaseInfo(database);
+        assertDatabaseInfo(database);
+        classPath = appendDoubleDotsToStrings(this.directoriesToAnalyse) + appendDoubleDotsToStrings(this.databaseLibPaths);
+
+        if (supportedCiphers.isEmpty())
+            setDefaultCiphers(orderedCiphers);
+        else
+            setSupportedCiphers(supportedCiphers, orderedCiphers);
     }
 
     void setDatabaseInfo(String database) throws SystemException {
@@ -58,6 +51,84 @@ public class AtocsConfig {
         }
         apiFilePath = databasePlugin.getApiFilePath();
         databaseLibPaths = databasePlugin.getLibPaths();
+    }
+
+    void setDefaultCiphers(List<String> orderedCiphers) throws UnknownEncryptionSchemeException {
+        List<Cipher> ciphers = new ArrayList<>();
+        int count = orderedCiphers.size();
+        for (String cipherName : orderedCiphers) {
+            Cipher cipher = new Cipher(cipherName, count);
+            switch (cipherName.toLowerCase()) {
+                case "std":
+                    break;
+                case "det":
+                    cipher.addProperty(Property.EQUALITY);
+                    break;
+                case "ope":
+                    cipher.addProperty(Property.EQUALITY);
+                    cipher.addProperty(Property.ORDER);
+                    break;
+                case "fpe":
+                    cipher.addProperty(Property.EQUALITY);
+                    cipher.addProperty(Property.FORMAT);
+                    break;
+                case "hom":
+                    cipher.addProperty(Property.ALGEBRAIC_OP);
+                    break;
+                case "se":
+                    cipher.addProperty(Property.EQUALITY);
+                    cipher.addProperty(Property.PARTIAL);
+                    cipher.addProperty(Property.REGEX);
+                    cipher.addProperty(Property.WORD_SEARCH);
+                    break;
+                default:
+                    throw new UnknownEncryptionSchemeException(cipherName);
+            }
+            ciphers.add(cipher);
+            count--;
+        }
+        Configurator.getInstance().init(databasePlugin, ciphers);
+    }
+
+    void setSupportedCiphers(Map<String, List<String>> cipherPreferences, List<String> orderedCiphers) throws EncryptionSchemePropertyException {
+        List<Cipher> ciphers = new ArrayList<>();
+        int count = orderedCiphers.size();
+        for (String cipherName : orderedCiphers) {
+            Cipher cipher = new Cipher(cipherName, count);
+            List<String> propertiesString = cipherPreferences.get(cipherName);
+            if (propertiesString == null)
+                throw new EncryptionSchemePropertyException("Unable to obtain the properties for cipher " + cipher);
+            for (String propertyString : propertiesString) {
+                switch (propertyString.toLowerCase()) {
+                    case "equality":
+                        cipher.addProperty(Property.EQUALITY);
+                        break;
+                    case "order":
+                        cipher.addProperty(Property.ORDER);
+                        break;
+                    case "algebraic":
+                        cipher.addProperty(Property.ALGEBRAIC_OP);
+                        break;
+                    case "format":
+                        cipher.addProperty(Property.FORMAT);
+                        break;
+                    case "regex":
+                        cipher.addProperty(Property.REGEX);
+                        break;
+                    case "partial":
+                        cipher.addProperty(Property.PARTIAL);
+                        break;
+                    case "word":
+                        cipher.addProperty(Property.WORD_SEARCH);
+                        break;
+                    default:
+                        throw new EncryptionSchemePropertyException("Unknown cipher property: " + propertyString);
+                }
+            }
+            ciphers.add(cipher);
+            count--;
+        }
+        Configurator.getInstance().init(databasePlugin, ciphers);
     }
 
     String getDatabase() {
@@ -82,6 +153,25 @@ public class AtocsConfig {
 
     DatabasePlugin getDatabasePlugin() {
         return databasePlugin;
+    }
+
+    private void assertArguments(String database, List<String> directoriesToAnalyse, List<String> entryPoints,
+                                 List<String> orderedCiphers, Map<String, List<String>> supportedCiphers) throws SystemException {
+        if (database == null)
+            throw new ApplicationConfigurationException("Missing database name.");
+        if (directoriesToAnalyse == null || directoriesToAnalyse.isEmpty())
+            throw new ApplicationConfigurationException("Missing directories to analyse.");
+        if (entryPoints == null)
+            throw new ApplicationConfigurationException("Error parsing entry points.");
+        if (orderedCiphers == null || orderedCiphers.isEmpty())
+            throw new ApplicationConfigurationException("Missing ordered cipher preferences.");
+        if (supportedCiphers == null)
+            throw new ApplicationConfigurationException("Error parsing supported ciphers.");
+    }
+
+    private void assertDatabaseInfo(String database) throws DatabaseConfigurationException {
+        if (apiFilePath == null || apiFilePath.isEmpty() || databaseLibPaths == null || databaseLibPaths.isEmpty())
+            throw new DatabaseConfigurationException(database);
     }
 
     private String appendDoubleDotsToStrings(List<String> list) {

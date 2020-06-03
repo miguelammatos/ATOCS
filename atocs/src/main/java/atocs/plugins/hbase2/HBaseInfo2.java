@@ -2,13 +2,13 @@ package atocs.plugins.hbase2;
 
 public class HBaseInfo2 {
     //HBase API info
-    public static final String HBASE2_API_FILE_PATH = "src/main/java/system/modules/hbase2/resources/hbase.yml";
-    public static final String HBASE2_LIB_PATH = "src/main/java/system/modules/hbase2/resources/hbase-client-2.2.3.jar";
+    public static final String HBASE2_API_FILE_PATH = "src/main/java/atocs/plugins/hbase2/resources/hbase.yml";
+    public static final String HBASE2_LIB_PATH = "src/main/java/atocs/plugins/hbase2/resources/hbase-client-2.2.3.jar";
 
     //SafeNoSQL API info
-    public static final String SAFENOSQL_API_FILE_PATH = "src/main/java/system/modules/hbase2/resources/safenosql.yml";
-    public static final String SAFENOSQL_LIB_PATH1 = "src/main/java/system/modules/hbase2/resources/safeclient-2.2.0.jar";
-    public static final String SAFENOSQL_LIB_PATH2 = "src/main/java/system/modules/hbase2/resources/safemapper-2.2.0.jar";
+    public static final String SAFENOSQL_API_FILE_PATH = "src/main/java/atocs/plugins/hbase2/resources/safenosql.yml";
+    public static final String SAFENOSQL_LIB_PATH1 = "src/main/java/atocs/plugins/hbase2/resources/safeclient-2.2.0.jar";
+    public static final String SAFENOSQL_LIB_PATH2 = "src/main/java/atocs/plugins/hbase2/resources/safemapper-2.2.0.jar";
 
     //SafeNoSQL classes
     public static final String CRYPTO_TABLE_CLASS = "pt.uminho.haslab.safeclient.secureTable.CryptoTable";

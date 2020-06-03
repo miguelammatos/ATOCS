@@ -12,6 +12,7 @@ import atocs.core.exceptions.SystemException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,28 @@ public class Parser {
                     entryPoints.add((String) entryPoint);
                 }
             }
-            return new AtocsConfig(databaseName, directoriesToAnalyse, entryPoints);
+            List<String> cipherPreferences = new ArrayList<>();
+            if (configMap.get("cipherPreferences") != null) {
+                for (Object cipher : (List)configMap.get("cipherPreferences")) {
+                    cipherPreferences.add((String) cipher);
+                }
+            }
+            Map<String, List<String>> supportedCiphers = new HashMap<>();
+            if (configMap.get("supportedCiphers") != null) {
+                for (Object cipherObj : (List)configMap.get("supportedCiphers")) {
+                    Map cipherMap = (Map) cipherObj;
+                    String cipherName = (String) cipherMap.get("name");
+                    List propertiesList = (List) cipherMap.get("properties");
+                    List<String> properties = new ArrayList<>();
+                    if (propertiesList != null) {
+                        for (Object prop : propertiesList) {
+                            properties.add((String) prop);
+                        }
+                    }
+                    supportedCiphers.put(cipherName, properties);
+                }
+            }
+            return new AtocsConfig(databaseName, directoriesToAnalyse, entryPoints, cipherPreferences, supportedCiphers);
         } catch (FileNotFoundException fnfe) {
             throw new FileException(configFile);
         } catch (YamlException ye) {

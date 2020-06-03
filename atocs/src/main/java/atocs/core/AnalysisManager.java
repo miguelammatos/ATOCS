@@ -48,7 +48,7 @@ public class AnalysisManager extends SceneTransformer {
 
         Inspector inspector = new Inspector();
         Set<SootMethod> methodsToAnalyse = inspector.getMethodsWithDbInteractions();
-        printMethodsToAnalyse(methodsToAnalyse);
+//        printMethodsToAnalyse(methodsToAnalyse);
 
         CodeAnalyser analyser = new CodeAnalyser(atocsConfig.getDatabasePlugin());
         analyser.analyse(methodsToAnalyse);

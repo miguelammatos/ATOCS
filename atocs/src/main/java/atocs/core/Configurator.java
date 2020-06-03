@@ -1,7 +1,5 @@
 package atocs.core;
 
-import atocs.core.ciphers.Cipher;
-import atocs.core.ciphers.OPE;
 import atocs.plugins.DatabasePlugin;
 
 import java.util.*;
@@ -30,7 +28,7 @@ public class Configurator {
         this.ciphers = ciphers;
     }
 
-    public void addRequirement(String operation, String tableName, DbField field, Requirement.Property property) {
+    public void addRequirement(String operation, String tableName, DbField field, Property property) {
         Requirement newRequirement = new Requirement(operation, tableName, field, property);
         Map<DbField, List<Requirement>> tableMap = uniqueRequirementsMap.get(tableName);
         if (tableMap == null)
@@ -38,25 +36,12 @@ public class Configurator {
         List<Requirement> fieldList = tableMap.get(field);
         if (fieldList == null)
             fieldList = new ArrayList<>();
-        addIfGreater(fieldList, newRequirement);
+        if (!fieldList.contains(newRequirement))
+            fieldList.add(newRequirement);
         tableMap.putIfAbsent(field, fieldList);
         uniqueRequirementsMap.putIfAbsent(tableName, tableMap);
 
         allRequirementList.add(newRequirement);
-    }
-
-    void addIfGreater(List<Requirement> list, Requirement requirement) {
-        if (list.isEmpty())
-            list.add(requirement);
-        else {
-            int maxWeight = list.stream().mapToInt(Requirement::getWeight).max().getAsInt();
-            if (maxWeight == requirement.getWeight() && !list.contains(requirement))
-                list.add(requirement);
-            else if (maxWeight < requirement.getWeight()) {
-                list.clear();
-                list.add(requirement);
-            }
-        }
     }
 
     public void addObtainedField(String tableName, DbField field) {
@@ -80,9 +65,6 @@ public class Configurator {
         getUniqueObtainedFields();
         Map<DbField, List<Requirement>> unsupportedFields = mapCiphers();
         Map<DbField, String> optimisations = inferOptimisations();
-        printAllRequirements();
-        printUniqueRequirements();
-        printAllObtainedFields();
         printFieldCiphers();
         printUnsupportedFieldRequirements(unsupportedFields);
         printOptimisations(optimisations);
@@ -92,7 +74,7 @@ public class Configurator {
         Map<DbField, String> optimisations = new HashMap<>();
         for (String table : fieldCiphers.keySet()) {
             for (DbField field : fieldCiphers.get(table).keySet()) {
-                if (fieldCiphers.get(table).get(field).equals(OPE.getInstance())) {
+                if (fieldCiphers.get(table).get(field).getName().toLowerCase().equals("ope")) { //TODO fix OPE
                     if (field.getName().equals("*keys*") || (!obtainedFields.get(table).contains(field) &&
                             obtainedFields.get(table).stream().noneMatch(v -> v.getName().equals("All Fields"))))
                         optimisations.put(field, "No need to optimize OPE field.");

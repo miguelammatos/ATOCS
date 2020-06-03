@@ -17,7 +17,6 @@ public class Inspector {
      * @return methods with database interactions.
      */
     Set<SootMethod> getMethodsWithDbInteractions() {
-        System.out.println("--- INTERACTIONS ---");
         Set<SootMethod> methodsToAnalyse = new HashSet<>();
         CallGraph cg = Scene.v().getCallGraph();
         Set<SootMethod> interactionMethods = API.getInstance().getMethods();
@@ -28,12 +27,9 @@ public class Inspector {
                 //ensure that the we only analyse application methods and not library methods
                 if (CodeAnalyser.assertMethodAnalysis(src)) {
                     methodsToAnalyse.add(src);
-                    System.out.println("-> " + interactionMethod.getSignature() + " is called by " +
-                            src.getSignature());
                 }
             }
         }
-        System.out.println("--- END INTERACTIONS ---\n");
         return methodsToAnalyse;
     }
 }
