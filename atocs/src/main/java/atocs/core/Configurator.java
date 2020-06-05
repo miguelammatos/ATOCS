@@ -68,15 +68,16 @@ public class Configurator {
         printFieldCiphers();
         printUnsupportedFieldRequirements(unsupportedFields);
         printOptimisations(optimisations);
+        printAllObtainedFields();
     }
 
-    Map<DbField, String> inferOptimisations() { // TODO fix
+    Map<DbField, String> inferOptimisations() {
         Map<DbField, String> optimisations = new HashMap<>();
         for (String table : fieldCiphers.keySet()) {
             for (DbField field : fieldCiphers.get(table).keySet()) {
-                if (fieldCiphers.get(table).get(field).getName().toLowerCase().equals("ope")) { //TODO fix OPE
-                    if (field.getName().equals("*keys*") || (!obtainedFields.get(table).contains(field) &&
-                            obtainedFields.get(table).stream().noneMatch(v -> v.getName().equals("All Fields"))))
+                if (fieldCiphers.get(table).get(field).getName().toLowerCase().equals("ope")) {
+                    if (field.isSpecialField() || (!obtainedFields.get(table).contains(field) &&
+                            obtainedFields.get(table).stream().noneMatch(DbField::isAllTableField)))
                         optimisations.put(field, "No need to optimize OPE field.");
                     else
                         optimisations.put(field, "Optimize OPE field by duplicating it with a faster cipher for decryption.");
@@ -146,28 +147,32 @@ public class Configurator {
     }
 
     void printUnsupportedFieldRequirements(Map<DbField, List<Requirement>> unsupportedFields) {
-        System.out.println("--- UNSUPPORTED FIELD REQUIREMENTS ---");
-        for (DbField field : unsupportedFields.keySet()) {
-            System.out.println("Unsupported Field:");
-            System.out.println("\tTable: " + field.getTable());
-            System.out.println("\tField: " + field.getName());
-            System.out.println("\tRequirements:");
-            for (Requirement requirement : unsupportedFields.get(field)) {
-                System.out.println("\t\t- " + requirement.getProperty());
+        if (!unsupportedFields.isEmpty()) {
+            System.out.println("--- UNSUPPORTED FIELD REQUIREMENTS ---");
+            for (DbField field : unsupportedFields.keySet()) {
+                System.out.println("Unsupported Field:");
+                System.out.println("\tTable: " + field.getTable());
+                System.out.println("\tField: " + field.getName());
+                System.out.println("\tRequirements:");
+                for (Requirement requirement : unsupportedFields.get(field)) {
+                    System.out.println("\t\t- " + requirement.getProperty());
+                }
             }
+            System.out.println("--- END UNSUPPORTED FIELD REQUIREMENTS ---\n");
         }
-        System.out.println("--- END UNSUPPORTED FIELD REQUIREMENTS ---\n");
     }
 
     void printOptimisations(Map<DbField, String> optimisations) {
-        System.out.println("--- OPTIMISATIONS ---");
-        for (DbField field : optimisations.keySet()) {
-            System.out.println("Optimisation:");
-            System.out.println("\tTable: " + field.getTable());
-            System.out.println("\tField: " + field.getName());
-            System.out.println("\tOptimise: " + optimisations.get(field));
+        if (!optimisations.isEmpty()) {
+            System.out.println("--- OPTIMISATIONS ---");
+            for (DbField field : optimisations.keySet()) {
+                System.out.println("Optimisation:");
+                System.out.println("\tTable: " + field.getTable());
+                System.out.println("\tField: " + field.getName());
+                System.out.println("\tOptimise: " + optimisations.get(field));
+            }
+            System.out.println("--- END OPTIMISATIONS ---\n");
         }
-        System.out.println("--- END OPTIMISATIONS ---\n");
     }
 
     void printUniqueRequirements() {

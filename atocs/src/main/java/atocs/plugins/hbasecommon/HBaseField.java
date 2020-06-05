@@ -23,33 +23,28 @@ public class HBaseField extends DbField {
     private String familyName;
     private String qualifierName;
     private SpecialField specialField;
-    private boolean isSpecialField;
 
     public HBaseField(String table) {
-        super(table, "All Fields");
+        super(table, "All Fields", false, true);
         this.familyName = "";
         this.qualifierName = "";
-        this.isSpecialField = false;
     }
 
     public HBaseField(String table, String familyName) {
-        super(table, familyName);
+        super(table, familyName, false, false);
         this.familyName = familyName;
         this.qualifierName = "";
-        this.isSpecialField = false;
     }
 
     public HBaseField(String table, String familyName, String qualifierName) {
-        super(table, familyName + ":" + qualifierName);
+        super(table, familyName + ":" + qualifierName, false, false);
         this.familyName = familyName;
         this.qualifierName = qualifierName;
-        this.isSpecialField = false;
     }
 
     public HBaseField(String table, SpecialField specialField) {
-        super(table, specialField.toString());
+        super(table, specialField.toString(), true, false);
         this.specialField = specialField;
-        this.isSpecialField = true;
     }
 
     public String getFamilyName() {
@@ -64,10 +59,6 @@ public class HBaseField extends DbField {
         return specialField;
     }
 
-    public boolean isAllTableField() {
-        return !isSpecialField() && familyName.isEmpty() && qualifierName.isEmpty();
-    }
-
     public boolean isFamilyOnlyField() {
         return !isSpecialField() && !familyName.isEmpty() && qualifierName.isEmpty();
     }
@@ -76,24 +67,19 @@ public class HBaseField extends DbField {
         return !isSpecialField() && !familyName.isEmpty() && !qualifierName.isEmpty();
     }
 
-    public boolean isSpecialField() {
-        return isSpecialField;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         HBaseField that = (HBaseField) o;
-        return isSpecialField() == that.isSpecialField() &&
-                Objects.equals(getFamilyName(), that.getFamilyName()) &&
+        return Objects.equals(getFamilyName(), that.getFamilyName()) &&
                 Objects.equals(getQualifierName(), that.getQualifierName()) &&
-                isSpecialField() == that.isSpecialField();
+                Objects.equals(getSpecialField(), that.getSpecialField());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getFamilyName(), getQualifierName(), isSpecialField(), isSpecialField());
+        return Objects.hash(super.hashCode(), getFamilyName(), getQualifierName(), getSpecialField());
     }
 }

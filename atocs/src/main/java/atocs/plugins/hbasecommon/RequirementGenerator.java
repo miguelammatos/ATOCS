@@ -1,9 +1,6 @@
 package atocs.plugins.hbasecommon;
 
-import atocs.core.Configurator;
-import atocs.core.DbField;
-import atocs.core.Property;
-import atocs.core.Requirement;
+import atocs.core.*;
 
 import java.util.List;
 import java.util.Map;
@@ -293,8 +290,8 @@ public class RequirementGenerator {
     public void removeOverlappingObtainedFields(Map<String, Set<DbField>> obtainedFields) {
         for (String table : obtainedFields.keySet()) {
             Set<DbField> tableFields = obtainedFields.get(table);
-            if (tableFields.stream().map(v -> (HBaseField)v).anyMatch(HBaseField::isAllTableField))
-                tableFields.removeIf(v -> !((HBaseField)v).isAllTableField());
+            if (tableFields.stream().anyMatch(DbField::isAllTableField))
+                tableFields.removeIf(v -> !(v.isAllTableField()));
             else {
                 Set<HBaseField> familyFields = tableFields.stream().map(v -> (HBaseField)v)
                         .filter(HBaseField::isFamilyOnlyField).collect(Collectors.toSet());
