@@ -56,6 +56,25 @@ public class RequirementGenerator {
     }
 
     /**
+     * Generates a Requirement for the increment operation for all the tableNames.
+     *
+     * @param tableNames all possible table names.
+     * @param familyNames all possible family names.
+     * @param qualifierNames all possible qualifier names.
+     */
+    public void generateIncrementRequirement(List<String> tableNames, List<String> familyNames,
+                                          List<String> qualifierNames) {
+        for (String tableName : tableNames) {
+            for (String family : familyNames) {
+                for (String qualifier : qualifierNames) {
+                    configurator.addRequirement("INCREMENT", tableName, new HBaseField(tableName, family, qualifier),
+                            Property.ALGEBRAIC_OP);
+                }
+            }
+        }
+    }
+
+    /**
      * Generates a Requirement for a filter operation.
      *
      * @param filterName the filter class name.
@@ -285,6 +304,16 @@ public class RequirementGenerator {
 
     public void addObtainedField(String tableName, String family, String qualifier) {
         Configurator.getInstance().addObtainedField(tableName, new HBaseField(tableName, family, qualifier));
+    }
+
+    public void addObtainedField(List<String> tableNames, List<String> families, List<String> qualifiers) {
+        for (String tableName : tableNames) {
+            for (String family : families) {
+                for (String qualifier : qualifiers) {
+                    addObtainedField(tableName, family, qualifier);
+                }
+            }
+        }
     }
 
     public void removeOverlappingObtainedFields(Map<String, Set<DbField>> obtainedFields) {

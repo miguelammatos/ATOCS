@@ -75,7 +75,7 @@ public class Configurator {
         Map<DbField, String> optimisations = new HashMap<>();
         for (String table : fieldCiphers.keySet()) {
             for (DbField field : fieldCiphers.get(table).keySet()) {
-                if (fieldCiphers.get(table).get(field).getName().toLowerCase().equals("ope")) {
+                if (fieldCiphers.get(table).get(field).getName().equalsIgnoreCase("ope")) {
                     if (field.isSpecialField() || (!obtainedFields.get(table).contains(field) &&
                             obtainedFields.get(table).stream().noneMatch(DbField::isAllTableField)))
                         optimisations.put(field, "No need to optimize OPE field.");

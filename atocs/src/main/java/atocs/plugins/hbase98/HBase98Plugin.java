@@ -78,23 +78,6 @@ public class HBase98Plugin extends HBasePlugin {
             return;
         }
 
-        String methodOperation = api.getMethodOperation(invokeExprState);
-        switch (methodOperation) {
-            case "PUT":
-                handlePutOperation(tableNames);
-                break;
-            case "GET":
-                handleGetOperation(invokeExprState, tableNames);
-                break;
-            case "SCAN":
-                handleScanOperation(invokeExprState, tableNames);
-                break;
-            case "DELETE":
-                handleDeleteOperation(tableNames);
-                break;
-            default:
-                logger.error("Unknown HBase operation");
-                break;
-        }
+        handleOperation(invokeExprState, tableNames);
     }
 }

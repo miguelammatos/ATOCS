@@ -116,13 +116,12 @@ public class Stack {
         return true;
     }
 
-    void mergeConditionalStmts(List<ConditionalStmt> conditionalStmts) { // TODO not keeping sorted
+    void mergeConditionalStmts(List<ConditionalStmt> conditionalStmts) {
         if (this.conditionalStmts.isEmpty())
             setConditionalStmts(conditionalStmts);
         else {
             for (ConditionalStmt newConditionalStmt : conditionalStmts) {
                 if (!this.conditionalStmts.contains(newConditionalStmt)) {
-//                    logger.warn("Conditional Statements are not preserving order.");
                     this.conditionalStmts.add(newConditionalStmt);
                 }
             }

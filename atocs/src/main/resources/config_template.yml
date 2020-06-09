@@ -10,3 +10,23 @@ directoriesToAnalyse:
 # Main classes of the application, which contain the main method
 entryPoints:
     - Main
+
+cipherPreferences:
+    - STD
+    - DET
+    - HOM
+    - FPE
+    - SE
+    - OPE
+
+# Optional
+supportedCiphers:
+  - name: STD
+    properties:
+  - name: DET
+    properties:
+      - EQUALITY
+  - name: OPE
+    properties:
+      - EQUALITY
+      - ORDER

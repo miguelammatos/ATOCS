@@ -15,6 +15,9 @@ public class HBaseInfo {
     //Scan class and methods
     public static final String SCAN_CLASS = "org.apache.hadoop.hbase.client.Scan";
 
+    //Increment class and methods
+    public static final String INCREMENT_CLASS = "org.apache.hadoop.hbase.client.Increment";
+
     //Abstract Filter class and methods
     public static final String FILTER = "org.apache.hadoop.hbase.filter.Filter";
     public static final String FILTER_BASE = "org.apache.hadoop.hbase.filter.FilterBase";

@@ -42,3 +42,29 @@ methods:
           tag: NA
       - - type: java.util.List
           tag: NA
+  - name: increment
+    operation: INCREMENT
+    args:
+      - - type: org.apache.hadoop.hbase.client.Increment
+          tag: NA
+  - name: incrementColumnValue
+    operation: INCREMENT
+    args:
+      - - type: byte[]
+          tag: NA
+        - type: byte[]
+          tag: NA
+        - type: byte[]
+          tag: NA
+        - type: long
+          tag: NA
+      - - type: byte[]
+          tag: NA
+        - type: byte[]
+          tag: NA
+        - type: byte[]
+          tag: NA
+        - type: long
+          tag: NA
+        - type: org.apache.hadoop.hbase.client.Durability
+          tag: NA
