@@ -1,16 +1,17 @@
 # Configuration file
 
-# Database system used by the application
+# Database system used by the application.
 database: HBase2
 
-# Application directories containing the .class files to analyse as well as the libraries' .class or .jar files
+# Application directories containing the .class files to analyse as well as the libraries' .class or .jar files.
 directoriesToAnalyse:
     - ../example-applications/simple-hbase-application/target/classes
 
-# Main classes of the application, which contain the main method
+# Main classes of the application, which contain the main method.
 entryPoints:
     - Main
 
+# Encryption schemes ordered by preference.
 cipherPreferences:
     - STD
     - DET
@@ -19,7 +20,8 @@ cipherPreferences:
     - SE
     - OPE
 
-# Optional
+# Optional. Encryption schemes supported by the secure database system to be used. Requires the specification of the
+# properties preserved by each scheme.
 supportedCiphers:
   - name: STD
     properties:
