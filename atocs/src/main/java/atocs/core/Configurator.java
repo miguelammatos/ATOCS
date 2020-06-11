@@ -1,7 +1,9 @@
 package atocs.core;
 
+import atocs.core.exceptions.ReportException;
 import atocs.plugins.DatabasePlugin;
 
+import java.io.*;
 import java.util.*;
 
 public class Configurator {
@@ -60,15 +62,33 @@ public class Configurator {
         return obtainedFields;
     }
 
-    void showReport() {
-        getUniqueRequirements();
-        getUniqueObtainedFields();
-        Map<DbField, List<Requirement>> unsupportedFields = mapCiphers();
-        Map<DbField, String> optimisations = inferOptimisations();
-        printFieldCiphers();
-        printUnsupportedFieldRequirements(unsupportedFields);
-        printOptimisations(optimisations);
-        printAllObtainedFields();
+    void showReport(String reportFileName) throws ReportException {
+        createOutputFile(reportFileName);
+        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(reportFileName, true)))) {
+            getUniqueRequirements();
+            getUniqueObtainedFields();
+            Map<DbField, List<Requirement>> unsupportedFields = mapCiphers();
+            Map<DbField, String> optimisations = inferOptimisations();
+            printFieldCiphers(writer);
+            printUnsupportedFieldRequirements(unsupportedFields, writer);
+            printOptimisations(optimisations, writer);
+            printAllObtainedFields(writer);
+        } catch (IOException e) {
+            throw new ReportException();
+        }
+    }
+
+    void createOutputFile(String reportFileName) throws ReportException {
+        try {
+            File myObj = new File(reportFileName);
+            if (!myObj.createNewFile()) {
+                FileWriter writer = new FileWriter(reportFileName, false);
+                writer.write("");
+                writer.close();
+            }
+        } catch (IOException e) {
+            throw new ReportException();
+        }
     }
 
     Map<DbField, String> inferOptimisations() {
@@ -80,7 +100,8 @@ public class Configurator {
                             obtainedFields.get(table).stream().noneMatch(DbField::isAllTableField)))
                         optimisations.put(field, "No need to optimize OPE field.");
                     else
-                        optimisations.put(field, "Optimize OPE field by duplicating it with a faster cipher for decryption.");
+                        optimisations.put(field,
+                                "Optimize OPE field by duplicating it with a faster cipher for decryption.");
                 }
             }
         }
@@ -131,88 +152,89 @@ public class Configurator {
         return ciphers.get(ciphers.size()-1);
     }
 
-    void printFieldCiphers() {
-        System.out.println("--- FIELD CIPHERS ---");
+    void printFieldCiphers(PrintWriter writer) {
+        writer.println("--- FIELD CIPHERS ---");
         for (String table : fieldCiphers.keySet()) {
             Map<DbField, Cipher> fieldMap = fieldCiphers.get(table);
             for (DbField field : fieldMap.keySet()) {
-                System.out.println("Field Cipher:");
-                System.out.println("\tTable: " + table);
-                System.out.println("\tField: " + field.getName());
-                System.out.println("\tCipher: " + fieldMap.get(field).toString());
+                writer.println("Field Cipher:");
+                writer.println("\tTable: " + table);
+                writer.println("\tField: " + field.getName());
+                writer.println("\tCipher: " + fieldMap.get(field).toString());
             }
         }
-        System.out.println("All remaining fields should use: " + getBestSecurityCipher());
-        System.out.println("--- END FIELD CIPHERS ---\n");
+        writer.println("All remaining fields should use: " + getBestSecurityCipher());
+        writer.println("--- END FIELD CIPHERS ---\n");
     }
 
-    void printUnsupportedFieldRequirements(Map<DbField, List<Requirement>> unsupportedFields) {
+    void printUnsupportedFieldRequirements(Map<DbField, List<Requirement>> unsupportedFields,
+                                           PrintWriter writer) {
         if (!unsupportedFields.isEmpty()) {
-            System.out.println("--- UNSUPPORTED FIELD REQUIREMENTS ---");
+            writer.println("--- UNSUPPORTED FIELD REQUIREMENTS ---");
             for (DbField field : unsupportedFields.keySet()) {
-                System.out.println("Unsupported Field:");
-                System.out.println("\tTable: " + field.getTable());
-                System.out.println("\tField: " + field.getName());
-                System.out.println("\tRequirements:");
+                writer.println("Unsupported Field:");
+                writer.println("\tTable: " + field.getTable());
+                writer.println("\tField: " + field.getName());
+                writer.println("\tRequirements:");
                 for (Requirement requirement : unsupportedFields.get(field)) {
-                    System.out.println("\t\t- " + requirement.getProperty());
+                    writer.println("\t\t- " + requirement.getProperty());
                 }
             }
-            System.out.println("--- END UNSUPPORTED FIELD REQUIREMENTS ---\n");
+            writer.println("--- END UNSUPPORTED FIELD REQUIREMENTS ---\n");
         }
     }
 
-    void printOptimisations(Map<DbField, String> optimisations) {
+    void printOptimisations(Map<DbField, String> optimisations, PrintWriter writer) {
         if (!optimisations.isEmpty()) {
-            System.out.println("--- OPTIMISATIONS ---");
+            writer.println("--- OPTIMISATIONS ---");
             for (DbField field : optimisations.keySet()) {
-                System.out.println("Optimisation:");
-                System.out.println("\tTable: " + field.getTable());
-                System.out.println("\tField: " + field.getName());
-                System.out.println("\tOptimise: " + optimisations.get(field));
+                writer.println("Optimisation:");
+                writer.println("\tTable: " + field.getTable());
+                writer.println("\tField: " + field.getName());
+                writer.println("\tOptimise: " + optimisations.get(field));
             }
-            System.out.println("--- END OPTIMISATIONS ---\n");
+            writer.println("--- END OPTIMISATIONS ---\n");
         }
     }
 
-    void printUniqueRequirements() {
-        System.out.println("--- REQUIREMENTS ---");
+    void printUniqueRequirements(PrintWriter writer) {
+        writer.println("--- REQUIREMENTS ---");
         for (String table : getUniqueRequirements().keySet()) {
             Map<DbField, List<Requirement>> fieldMap = uniqueRequirementsMap.get(table);
             for (DbField field : fieldMap.keySet()) {
                 for (Requirement requirement : fieldMap.get(field)) {
-                    System.out.println("Requirement:");
-                    System.out.println("\tTable: " + table);
-                    System.out.println("\tField: " + field.getName());
-                    System.out.println("\tProperty: " + requirement.getProperty());
+                    writer.println("Requirement:");
+                    writer.println("\tTable: " + table);
+                    writer.println("\tField: " + field.getName());
+                    writer.println("\tProperty: " + requirement.getProperty());
                 }
             }
         }
-        System.out.println("--- END REQUIREMENTS ---\n");
+        writer.println("--- END REQUIREMENTS ---\n");
     }
 
-    void printAllObtainedFields() {
-        System.out.println("--- OBTAINED FIELDS ---");
+    void printAllObtainedFields(PrintWriter writer) {
+        writer.println("--- OBTAINED FIELDS ---");
         for (String table : getUniqueObtainedFields().keySet()) {
             Set<DbField> fieldList = obtainedFields.get(table);
             for (DbField field : fieldList) {
-                System.out.println("Obtained Field:");
-                System.out.println("\tTable: " + table);
-                System.out.println("\tField: " + field.getName());
+                writer.println("Obtained Field:");
+                writer.println("\tTable: " + table);
+                writer.println("\tField: " + field.getName());
             }
         }
-        System.out.println("--- END OBTAINED FIELDS ---\n");
+        writer.println("--- END OBTAINED FIELDS ---\n");
     }
 
-    void printAllRequirements() {
-        System.out.println("--- ALL REQUIREMENTS ---");
+    void printAllRequirements(PrintWriter writer) {
+        writer.println("--- ALL REQUIREMENTS ---");
         for (Requirement requirement : allRequirementList) {
-            System.out.println("Requirement:");
-            System.out.println("\tOperation: " + requirement.getOperation());
-            System.out.println("\tTable: " + requirement.getTable());
-            System.out.println("\tField: " + requirement.getField().getName());
-            System.out.println("\tProperty: " + requirement.getProperty());
+            writer.println("Requirement:");
+            writer.println("\tOperation: " + requirement.getOperation());
+            writer.println("\tTable: " + requirement.getTable());
+            writer.println("\tField: " + requirement.getField().getName());
+            writer.println("\tProperty: " + requirement.getProperty());
         }
-        System.out.println("--- END ALL REQUIREMENTS ---\n");
+        writer.println("--- END ALL REQUIREMENTS ---\n");
     }
 }

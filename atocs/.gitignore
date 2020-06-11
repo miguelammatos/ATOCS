@@ -36,5 +36,6 @@ target/
 # Soot
 sootOutput/
 
-# Project
+# ATOCS
 config.yml
+atocs-output.txt
