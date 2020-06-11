@@ -5,6 +5,9 @@ import atocs.plugins.DatabasePlugin;
 import atocs.plugins.hbase2.HBase2Plugin;
 import atocs.plugins.hbase98.HBase98Plugin;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +36,8 @@ public class AtocsConfig {
             setDefaultCiphers(orderedCiphers);
         else
             setSupportedCiphers(supportedCiphers, orderedCiphers);
+
+        createOutputFile();
     }
 
     void setDatabaseInfo(String database) throws SystemException {
@@ -129,6 +134,19 @@ public class AtocsConfig {
             count--;
         }
         Configurator.getInstance().init(databasePlugin, ciphers);
+    }
+
+    void createOutputFile() throws ReportException {
+        try {
+            File myObj = new File(Constants.REPORT_FILE_NAME);
+            if (!myObj.createNewFile()) {
+                FileWriter writer = new FileWriter(Constants.REPORT_FILE_NAME, false);
+                writer.write("");
+                writer.close();
+            }
+        } catch (IOException e) {
+            throw new ReportException();
+        }
     }
 
     String getDatabase() {

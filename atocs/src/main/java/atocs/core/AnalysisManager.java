@@ -11,7 +11,6 @@ import java.util.Set;
 
 public class AnalysisManager extends SceneTransformer {
     private final Logger logger = LoggerFactory.getLogger(AnalysisManager.class);
-    private static String REPORT_FILE_NAME = "atocs-output.txt";
     private final AtocsConfig atocsConfig;
 
     AnalysisManager(AtocsConfig atocsConfig) {
@@ -47,8 +46,8 @@ public class AnalysisManager extends SceneTransformer {
         CodeAnalyser analyser = new CodeAnalyser(atocsConfig.getDatabasePlugin());
         analyser.analyse(methodsToAnalyse);
 
-        Configurator.getInstance().showReport(REPORT_FILE_NAME);
-        System.out.println("ATOCS final output is presented in the " + REPORT_FILE_NAME + " file.");
+        Configurator.getInstance().showReport();
+        System.out.println("ATOCS final output is presented in the " + Constants.REPORT_FILE_NAME + " file.");
     }
 
 }

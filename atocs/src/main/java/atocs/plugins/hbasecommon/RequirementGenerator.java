@@ -12,47 +12,51 @@ public class RequirementGenerator {
     private Configurator configurator = Configurator.getInstance();
 
     /**
-     * Generates a Requirement for the put operation for all the tableNames.
+     * Generates a Requirement for the table keys with an Equality property.
      *
+     * @param operation the operation being performed.
      * @param tableNames all possible table names.
      */
-    public void generatePutRequirement(List<String> tableNames) {
+    public void generateKeyEqualityRequirement(String operation, List<String> tableNames) {
         for (String tableName : tableNames)
-            configurator.addRequirement("PUT", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
+            configurator.addRequirement(operation, tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
                     Property.EQUALITY);
     }
 
     /**
-     * Generates a Requirement for the get operation for all the tableNames.
+     * Generates a Requirement for the table keys with an Order property.
      *
+     * @param operation the operation being performed.
      * @param tableNames all possible table names.
      */
-    public void generateGetRequirement(List<String> tableNames) {
+    public void generateKeyOrderRequirement(String operation, List<String> tableNames) {
         for (String tableName : tableNames)
-            configurator.addRequirement("GET", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Property.EQUALITY);
-    }
-
-    /**
-     * Generates a Requirement for the scan operation for all the tableNames.
-     *
-     * @param tableNames all possible table names.
-     */
-    public void generateScanRequirement(List<String> tableNames) {
-        for (String tableName : tableNames)
-            configurator.addRequirement("SCAN", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
+            configurator.addRequirement(operation, tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
                     Property.ORDER);
     }
 
     /**
-     * Generates a Requirement for the delete operation for all the tableNames.
+     * Generates a Requirement for the table keys with a Search property.
      *
+     * @param operation the operation being performed.
      * @param tableNames all possible table names.
      */
-    public void generateDeleteRequirement(List<String> tableNames) {
+    public void generateKeySearchRequirement(String operation, List<String> tableNames) {
         for (String tableName : tableNames)
-            configurator.addRequirement("DELETE", tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Property.EQUALITY);
+            configurator.addRequirement(operation, tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
+                    Property.PARTIAL);
+    }
+
+    /**
+     * Generates a Requirement for the table column family and qualifier with a Search property.
+     *
+     * @param operation the operation being performed.
+     * @param tableNames all possible table names.
+     */
+    public void generateColumnSearchRequirement(String operation, List<String> tableNames) {
+        for (String tableName : tableNames)
+            configurator.addRequirement(operation, tableName, new HBaseField(tableName,
+                    HBaseField.SpecialField.COLUMN_NAMES), Property.PARTIAL);
     }
 
     /**
@@ -63,7 +67,7 @@ public class RequirementGenerator {
      * @param qualifierNames all possible qualifier names.
      */
     public void generateIncrementRequirement(List<String> tableNames, List<String> familyNames,
-                                          List<String> qualifierNames) {
+                                             List<String> qualifierNames) {
         for (String tableName : tableNames) {
             for (String family : familyNames) {
                 for (String qualifier : qualifierNames) {
@@ -201,42 +205,6 @@ public class RequirementGenerator {
                     }
                 }
         }
-    }
-
-    /**
-     * Generates a Requirement for the table keys with a Search property.
-     *
-     * @param filterName the filter class name.
-     * @param tableNames all possible table names.
-     */
-    public void generateKeySearchRequirement(String filterName, List<String> tableNames) {
-        for (String tableName : tableNames)
-            configurator.addRequirement(filterName, tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Property.PARTIAL);
-    }
-
-    /**
-     * Generates a Requirement for the table keys with an Order property.
-     *
-     * @param filterName the filter class name.
-     * @param tableNames all possible table names.
-     */
-    public void generateKeyOrderRequirement(String filterName, List<String> tableNames) {
-        for (String tableName : tableNames)
-            configurator.addRequirement(filterName, tableName, new HBaseField(tableName, HBaseField.SpecialField.KEYS),
-                    Property.ORDER);
-    }
-
-    /**
-     * Generates a Requirement for the table column family and qualifier with a Search property.
-     *
-     * @param filterName the filter class name.
-     * @param tableNames all possible table names.
-     */
-    public void generateColumnSearchRequirement(String filterName, List<String> tableNames) {
-        for (String tableName : tableNames)
-            configurator.addRequirement(filterName, tableName, new HBaseField(tableName,
-                            HBaseField.SpecialField.COLUMN_NAMES), Property.PARTIAL);
     }
 
     /**

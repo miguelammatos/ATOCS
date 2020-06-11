@@ -1,6 +1,9 @@
 package atocs.core;
 
 public class Constants {
+    static String REPORT_FILE_NAME = "atocs-output.txt";
+
+    // Constructor method
     public static final String INIT_METHOD = "<init>";
 
     // List
@@ -17,6 +20,9 @@ public class Constants {
     // Iterator
     public static final String JAVA_ITERATOR = "java.util.Iterator";
     public static final String JAVA_ITERATOR_METHOD = "iterator";
+
+    // Map
+    public static final String JAVA_MAP = "java.util.Map";
 
     // String
     public static final String STRING_CLASS = "java.lang.String";

@@ -67,6 +67,15 @@ public abstract class HBasePlugin extends DatabasePlugin {
             case "INCREMENT":
                 handleIncrementOperation(tableInvokeExprState, tableNames);
                 break;
+            case "APPEND":
+                handleAppendOperation(tableInvokeExprState, tableNames);
+                break;
+            case "MUTATE":
+                handleMutateRowOperation(tableNames);
+                break;
+            case "CHECKMUTATE":
+                handleCheckAndMutateOperation(tableInvokeExprState, tableNames);
+                break;
             default:
                 logger.error("Unknown HBase operation");
                 break;
@@ -80,7 +89,8 @@ public abstract class HBasePlugin extends DatabasePlugin {
      * @param tableNames the possible table names.
      */
     protected void handlePutOperation(List<StringValueState> tableNames) {
-        requirementGenerator.generatePutRequirement(CodeAnalyser.getStringsFromStringValueStates(tableNames));
+        requirementGenerator.generateKeyEqualityRequirement("PUT",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
     }
 
     /**
@@ -91,7 +101,8 @@ public abstract class HBasePlugin extends DatabasePlugin {
      */
     protected void handleGetOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
         if (tableInvokeExprState.getArgCount() == 1) {
-            requirementGenerator.generateGetRequirement(CodeAnalyser.getStringsFromStringValueStates(tableNames));
+            requirementGenerator.generateKeyEqualityRequirement("GET",
+                    CodeAnalyser.getStringsFromStringValueStates(tableNames));
             ValueState tableGetArg = tableInvokeExprState.getArg(0);
             List<ValueState> getObjRefs = new ArrayList<>();
             if (CodeAnalyser.isOfType(tableGetArg, HBaseInfo.GET_CLASS))
@@ -116,7 +127,8 @@ public abstract class HBasePlugin extends DatabasePlugin {
      */
     protected void handleScanOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
         if (tableInvokeExprState.getArgCount() == 1) {
-            requirementGenerator.generateScanRequirement(CodeAnalyser.getStringsFromStringValueStates(tableNames));
+            requirementGenerator.generateKeyOrderRequirement("SCAN",
+                    CodeAnalyser.getStringsFromStringValueStates(tableNames));
             ValueState tableScanArg = tableInvokeExprState.getArg(0);
             if (CodeAnalyser.isOfType(tableScanArg, HBaseInfo.SCAN_CLASS)) {
                 List<ValueState> scanObjRefs = new ArrayList<>();
@@ -134,7 +146,8 @@ public abstract class HBasePlugin extends DatabasePlugin {
      * @param tableNames the possible table names.
      */
     protected void handleDeleteOperation(List<StringValueState> tableNames) {
-        requirementGenerator.generateDeleteRequirement(CodeAnalyser.getStringsFromStringValueStates(tableNames));
+        requirementGenerator.generateKeyEqualityRequirement("DELETE",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
     }
 
     /**
@@ -144,73 +157,130 @@ public abstract class HBasePlugin extends DatabasePlugin {
      * @param tableNames the possible table names.
      */
     protected void handleIncrementOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
-        List<StringValueState> families = new ArrayList<>();
-        List<StringValueState> qualifiers = new ArrayList<>();
+        List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers = new ArrayList<>();
         if (tableInvokeExprState.getArgCount() == 1) {
             List<ValueState> incObjRefs = new ArrayList<>();
             incObjRefs.add(tableInvokeExprState.getArg(0));
-            List<ColumnFamilyAndQualifier> aux = handleIncrementObject(incObjRefs);
-            for (ColumnFamilyAndQualifier famAndQua : aux) {
-                families.addAll(famAndQua.getFamilies());
-                qualifiers.addAll(famAndQua.getQualifiers());
-            }
+            columnFamilyAndQualifiers.addAll(handleIncrementAndAppendObject(incObjRefs));
         } else if (tableInvokeExprState.getArgCount() == 4 || tableInvokeExprState.getArgCount() == 5) {
-            families.addAll(getStringFromToBytesMethod(tableInvokeExprState.getArg(1)));
-            qualifiers.addAll(getStringFromToBytesMethod(tableInvokeExprState.getArg(2)));
+            columnFamilyAndQualifiers.add(new ColumnFamilyAndQualifier(
+                    getStringFromToBytesMethod(tableInvokeExprState.getArg(1)),
+                    getStringFromToBytesMethod(tableInvokeExprState.getArg(2))));
         } else {
             logger.error("Unknown Table increment operation argument.");
             return;
         }
 
+        intersectValues(tableNames, columnFamilyAndQualifiers);
+    }
+
+    /**
+     * Analyses an append operation and determines the database field requirements.
+     *
+     * @param tableNames the possible table names.
+     */
+    protected void handleAppendOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
+        if (tableInvokeExprState.getArgCount() == 1) {
+            List<ValueState> objRefs = new ArrayList<>();
+            objRefs.add(tableInvokeExprState.getArg(0));
+            List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers = handleIncrementAndAppendObject(objRefs);
+            intersectValues(tableNames, columnFamilyAndQualifiers);
+        } else {
+            logger.error("Unknown Table append operation argument.");
+        }
+    }
+
+    /**
+     * Analyses a mutate row operation and determines the database field requirements. Mutate row operation receives a
+     * RowMutations object, which can only receive either Put or Delete objects.
+     *
+     * @param tableNames the possible table names.
+     */
+    protected void handleMutateRowOperation(List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyEqualityRequirement("MUTATE",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+    }
+
+    /**
+     * Analyses a checkAndMutate operation and determines the database field requirements.
+     *
+     * @param tableInvokeExprState application state when the scan operation was found.
+     * @param tableNames the possible table names.
+     */
+    protected void handleCheckAndMutateOperation(InvokeExprState tableInvokeExprState,
+                                                 List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyEqualityRequirement("CHECKMUTATE",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+        if (tableInvokeExprState.getArgCount() == 2) {
+            if (CodeAnalyser.isOfType(tableInvokeExprState.getArg(1), HBaseInfo.FILTER)) {
+                getFilterHandler().handleFilter(CodeAnalyser.getStringsFromStringValueStates(tableNames),
+                        tableInvokeExprState.getArg(1), new ArrayList<>());
+            }
+        } else {
+            logger.error("Unknown Table checkAndMutate operation argument.");
+        }
+    }
+
+
+    /**
+     * Determines the String value of the column family and qualifier from a given Increment or Append object.
+     *
+     * @param objRefs the Increment or Append objects
+     * @return the list of Strings associated with this column family and qualifier.
+     */
+    protected List<ColumnFamilyAndQualifier> handleIncrementAndAppendObject(List<ValueState> objRefs) {
+        List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers = new ArrayList<>();
+        for (int i = 0; i < objRefs.size(); i++) {
+            ValueState objRef = objRefs.get(i);
+            // Determine if the object was created based on another object and add it
+            // to the objRefs
+            List<InvokeExprState> incInitExprs = CodeAnalyser.findObjConstructorInvocationFromObjRef(objRef);
+            for (InvokeExprState incInitExpr : incInitExprs) {
+                if (incInitExpr.getArgCount() == 1
+                        && (CodeAnalyser.isOfType(incInitExpr.getArg(0), HBaseInfo.INCREMENT_CLASS)
+                        || CodeAnalyser.isOfType(incInitExpr.getArg(0), HBaseInfo.APPEND_CLASS))) {
+                    objRefs.add(incInitExpr.getArg(0));
+                } else if (incInitExpr.getArgCount() == 3
+                        && CodeAnalyser.isOfType(incInitExpr.getArg(2), Constants.JAVA_MAP)) {
+                    logger.warn("HBase Increment and Append objects with the following constructor are not supported. " +
+                            "Analysis may be less precise regarding this operation. {}", incInitExpr);
+                }
+            }
+
+            List<InvokeExprState> addColumnExpList = CodeAnalyser.findMethodInvocationFromObjectRef(
+                    HBaseInfo.ADD_COLUMN_METHOD, objRef);
+            for (InvokeExprState addColumnExp : addColumnExpList) {
+                ColumnFamilyAndQualifier columnFamilyAndQualifier =
+                        new ColumnFamilyAndQualifier(getStringFromToBytesMethod(addColumnExp.getArg(0)),
+                                getStringFromToBytesMethod(addColumnExp.getArg(1)));
+                columnFamilyAndQualifiers.add(columnFamilyAndQualifier);
+            }
+
+        }
+        return columnFamilyAndQualifiers;
+    }
+
+    protected void intersectValues(List<StringValueState> tableNames,
+                                   List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers) {
         for (StringValueState tableName : tableNames) {
             List<String> intersectTables = new ArrayList<>();
             List<String> intersectFamilies = new ArrayList<>();
             List<String> intersectQualifiers = new ArrayList<>();
-            for (StringValueState family : families) {
-                if (tableName.methodChainIntersectsWith(family))
-                    intersectFamilies.add(family.getStringValue());
-            }
-            for (StringValueState qualifier : qualifiers) {
-                if (tableName.methodChainIntersectsWith(qualifier))
-                    intersectQualifiers.add(qualifier.getStringValue());
+            for (ColumnFamilyAndQualifier famAndQua : columnFamilyAndQualifiers) {
+                for (StringValueState family : famAndQua.getFamilies()) {
+                    if (tableName.methodChainIntersectsWith(family))
+                        intersectFamilies.add(family.getStringValue());
+                }
+                for (StringValueState qualifier : famAndQua.getQualifiers()) {
+                    if (tableName.methodChainIntersectsWith(qualifier))
+                        intersectQualifiers.add(qualifier.getStringValue());
+                }
             }
             intersectTables.add(tableName.getStringValue());
             requirementGenerator.addObtainedField(intersectTables, intersectFamilies, intersectQualifiers);
             requirementGenerator.generateIncrementRequirement(intersectTables, intersectFamilies,
                     intersectQualifiers);
         }
-    }
-
-    /**
-     * Determines the String value of the column family and qualifier from a given Increment object.
-     *
-     * @param incRefs the Increment objects
-     * @return the list of Strings associated with this column family and qualifier.
-     */
-    protected List<ColumnFamilyAndQualifier> handleIncrementObject(List<ValueState> incRefs) {
-        List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers = new ArrayList<>();
-        for (int i = 0; i < incRefs.size(); i++) {
-            ValueState incRef = incRefs.get(i);
-            // Determine if the inc object was created based on another inc object and add it
-            // to the incRefs
-            List<InvokeExprState> incInitExprs = CodeAnalyser.findObjConstructorInvocationFromObjRef(incRef);
-            for (InvokeExprState incInitExpr : incInitExprs) {
-                if (incInitExpr.getArgCount() == 1 &&
-                        (CodeAnalyser.isOfType(incInitExpr.getArg(0), HBaseInfo.INCREMENT_CLASS)))
-                    incRefs.add(incInitExpr.getArg(0));
-            }
-
-            List<InvokeExprState> incAddColumnExpList = CodeAnalyser.findMethodInvocationFromObjectRef(
-                    HBaseInfo.ADD_COLUMN_METHOD, incRef);
-            for (InvokeExprState incAddColumnExp : incAddColumnExpList) {
-                ColumnFamilyAndQualifier columnFamilyAndQualifier =
-                        new ColumnFamilyAndQualifier(getStringFromToBytesMethod(incAddColumnExp.getArg(0)),
-                                getStringFromToBytesMethod(incAddColumnExp.getArg(1)));
-                columnFamilyAndQualifiers.add(columnFamilyAndQualifier);
-            }
-
-        }
-        return columnFamilyAndQualifiers;
     }
 
     /**

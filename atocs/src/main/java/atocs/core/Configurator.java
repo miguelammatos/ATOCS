@@ -62,9 +62,9 @@ public class Configurator {
         return obtainedFields;
     }
 
-    void showReport(String reportFileName) throws ReportException {
-        createOutputFile(reportFileName);
-        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(reportFileName, true)))) {
+    void showReport() throws ReportException {
+        try (PrintWriter writer = new PrintWriter(new BufferedWriter(
+                new FileWriter(Constants.REPORT_FILE_NAME, true)))) {
             getUniqueRequirements();
             getUniqueObtainedFields();
             Map<DbField, List<Requirement>> unsupportedFields = mapCiphers();
@@ -73,19 +73,6 @@ public class Configurator {
             printUnsupportedFieldRequirements(unsupportedFields, writer);
             printOptimisations(optimisations, writer);
             printAllObtainedFields(writer);
-        } catch (IOException e) {
-            throw new ReportException();
-        }
-    }
-
-    void createOutputFile(String reportFileName) throws ReportException {
-        try {
-            File myObj = new File(reportFileName);
-            if (!myObj.createNewFile()) {
-                FileWriter writer = new FileWriter(reportFileName, false);
-                writer.write("");
-                writer.close();
-            }
         } catch (IOException e) {
             throw new ReportException();
         }

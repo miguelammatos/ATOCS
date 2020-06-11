@@ -35,3 +35,16 @@ methods:
     args:
       - - org.apache.hadoop.hbase.client.Delete
       - - java.util.List
+  - name: append
+    operation: APPEND
+    args:
+      - - org.apache.hadoop.hbase.client.Append
+  - name: mutateRow
+    operation: MUTATE
+    args:
+      - - org.apache.hadoop.hbase.client.RowMutations
+  - name: checkAndMutate
+    operation: CHECKMUTATE
+    args:
+      - - byte[]
+        - byte[]
