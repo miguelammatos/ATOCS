@@ -68,17 +68,13 @@ public class API {
      *
      * @param className name of the declaring class of the method.
      * @param methodName name of the method.
-     * @param argumentList list of arguments of the method.
+     * @param arguments list of argument types of the method.
      * @param operation specifies the type of database operation performed by the method.
      */
-    public void addMethod(String className, String methodName, List<Argument> argumentList, String operation) {
+    public void addMethod(String className, String methodName, List<Type> arguments, String operation) {
         try {
-            MethodInfo methodInfo = new MethodInfo(operation, argumentList);
-            List<Type> argTypes = new ArrayList<>();
-            for (Argument arg : argumentList)
-                argTypes.add(arg.getType());
-
-            SootMethod method = Scene.v().getSootClass(className).getMethod(methodName, argTypes);
+            MethodInfo methodInfo = new MethodInfo(operation, arguments);
+            SootMethod method = Scene.v().getSootClass(className).getMethod(methodName, arguments);
             methodsMap.put(method, methodInfo);
         } catch (RuntimeException e) {
             logger.error("Unable to create SootMethod from API method " + className + ":" + methodName);
@@ -89,19 +85,16 @@ public class API {
         return className + ":" + methodName;
     }
 
-    public static String getMethodKey(SootMethod sootMethod) {
-        return getMethodKey(sootMethod.getDeclaringClass().getName(), sootMethod.getName());
-    }
-
-    public void printAPI() {
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
         for(SootMethod m : methodsMap.keySet()) {
-            logger.debug("METHOD: " + m.getSignature());
-            logger.debug("ArgList:");
-            for (Argument arg : methodsMap.get(m).getArguments()) {
-                logger.debug("\t\tType: " + arg.getType().toString());
-                logger.debug("\t\tNote: " + arg.getTag());
+            sb.append("METHOD: ").append(m.getSignature()).append("\n");
+            sb.append("ArgList:" + "\n");
+            for (Type arg : methodsMap.get(m).getArguments()) {
+                sb.append("\t\tArg: ").append(arg.toString()).append("\n");
             }
-            logger.debug("");
         }
+        return sb.toString();
     }
 }

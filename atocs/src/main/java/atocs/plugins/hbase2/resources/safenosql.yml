@@ -19,26 +19,19 @@ methods:
   - name: put
     operation: PUT
     args:
-      - - type: org.apache.hadoop.hbase.client.Put
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Put
+      - - java.util.List
   - name: get
     operation: GET
     args:
-      - - type: org.apache.hadoop.hbase.client.Get
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Get
+      - - java.util.List
   - name: getScanner
     operation: SCAN
     args:
-      - - type: org.apache.hadoop.hbase.client.Scan
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Scan
   - name: delete
     operation: DELETE
     args:
-      - - type: org.apache.hadoop.hbase.client.Delete
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Delete
+      - - java.util.List

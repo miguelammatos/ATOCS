@@ -7,67 +7,47 @@
 #  - name: methodname
 #    operation: type of database operation performed
 #    args:
-#      - - type: fieldType  # - - represents a set of arguments for the method defined above
-#          tag: ...
-#        - type: fieldType
-#          tag: ...
-#      - - type: fieldType # - - this is a new set of arguments for the method defined above
-#          tag: ...
+#      - - fieldType  # - - represents a set of arguments for the method defined above
+#        - fieldType
+#      - - fieldType # - - this is a new set of arguments for the method defined above
 
 className: org.apache.hadoop.hbase.client.Table
 methods:
   - name: put
     operation: PUT
     args:
-      - - type: org.apache.hadoop.hbase.client.Put
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Put
+      - - java.util.List
   - name: get
     operation: GET
     args:
-      - - type: org.apache.hadoop.hbase.client.Get
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Get
+      - - java.util.List
   - name: getScanner
     operation: SCAN
     args:
-      - - type: org.apache.hadoop.hbase.client.Scan
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Scan
   - name: delete
     operation: DELETE
     args:
-      - - type: org.apache.hadoop.hbase.client.Delete
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Delete
+      - - java.util.List
   - name: increment
     operation: INCREMENT
     args:
-      - - type: org.apache.hadoop.hbase.client.Increment
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Increment
   - name: incrementColumnValue
     operation: INCREMENT
     args:
-      - - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: long
-          tag: NA
-      - - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: long
-          tag: NA
-        - type: org.apache.hadoop.hbase.client.Durability
-          tag: NA
+      - - byte[]
+        - byte[]
+        - byte[]
+        - long
+      - - byte[]
+        - byte[]
+        - byte[]
+        - long
+        - org.apache.hadoop.hbase.client.Durability
 
 ---
 className: org.apache.hadoop.hbase.client.HTable
@@ -75,52 +55,35 @@ methods:
   - name: put
     operation: PUT
     args:
-      - - type: org.apache.hadoop.hbase.client.Put
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Put
+      - - java.util.List
   - name: get
     operation: GET
     args:
-      - - type: org.apache.hadoop.hbase.client.Get
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Get
+      - - java.util.List
   - name: getScanner
     operation: SCAN
     args:
-      - - type: org.apache.hadoop.hbase.client.Scan
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Scan
   - name: delete
     operation: DELETE
     args:
-      - - type: org.apache.hadoop.hbase.client.Delete
-          tag: NA
-      - - type: java.util.List
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Delete
+      - - java.util.List
   - name: increment
     operation: INCREMENT
     args:
-      - - type: org.apache.hadoop.hbase.client.Increment
-          tag: NA
+      - - org.apache.hadoop.hbase.client.Increment
   - name: incrementColumnValue
     operation: INCREMENT
     args:
-      - - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: long
-          tag: NA
-      - - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: byte[]
-          tag: NA
-        - type: long
-          tag: NA
-        - type: org.apache.hadoop.hbase.client.Durability
-          tag: NA
+      - - byte[]
+        - byte[]
+        - byte[]
+        - long
+      - - byte[]
+        - byte[]
+        - byte[]
+        - long
+        - org.apache.hadoop.hbase.client.Durability

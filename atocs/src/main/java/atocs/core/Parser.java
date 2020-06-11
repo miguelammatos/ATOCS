@@ -4,7 +4,6 @@ import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import soot.*;
 import atocs.core.api.API;
-import atocs.core.api.Argument;
 import atocs.core.exceptions.FileException;
 import atocs.core.exceptions.ParsingException;
 import atocs.core.exceptions.SystemException;
@@ -125,55 +124,52 @@ public class Parser {
      *
      * @param className name of the declaring class of the method.
      * @param methodName name of the method.
-     * @param arguments list of arguments of the method.
+     * @param argumentList list of arguments of the method.
      */
-    void addMethodToApi(String className, String methodName, List arguments, String operation) {
-        List<Argument> argumentList = createArgumentList(arguments);
-        API.getInstance().addMethod(className, methodName, argumentList, operation);
+    void addMethodToApi(String className, String methodName, List argumentList, String operation) {
+        List<Type> arguments = createArgumentList(argumentList);
+        API.getInstance().addMethod(className, methodName, arguments, operation);
     }
 
     /**
-     * Creates an argument list of a certain method from the string in the yaml file. Each
-     * argument is an Argument object.
+     * Creates an argument list of a certain method from the string in the yaml file.
      *
      * @param arguments list of arguments provided by the yaml file.
-     * @return  list of arguments.
+     * @return list of argument types.
      */
-    List<Argument> createArgumentList(List arguments) {
-        List<Argument> argumentList = new ArrayList<>();
+    List<Type> createArgumentList(List arguments) {
+        List<Type> argumentList = new ArrayList<>();
         for (Object argObj : arguments) {
-            Map argMap = (Map) argObj; //Map representing an argument, with type and tag
-            String type = (String) argMap.get("type"); //field methods.args.type
+            String type = (String) argObj;
             String typeLower = type.toLowerCase();
-            String tag = (String) argMap.get("tag"); //field methods.args.tag
-            Argument arg = null;
+            Type arg;
             switch (typeLower){
                 case BYTE_TYPE:
-                    arg = new Argument(ByteType.v(), tag);
+                    arg = ByteType.v();
                     break;
                 case BYTE_ARRAY_TYPE:
-                    arg = new Argument(ArrayType.v(ByteType.v(), 1), tag);
+                    arg = ArrayType.v(ByteType.v(), 1);
                     break;
                 case INT_TYPE:
-                    arg = new Argument(IntType.v(), tag);
+                    arg = IntType.v();
                     break;
                 case LONG_TYPE:
-                    arg = new Argument(LongType.v(), tag);
+                    arg = LongType.v();
                     break;
                 case DOUBLE_TYPE:
-                    arg = new Argument(DoubleType.v(), tag);
+                    arg = DoubleType.v();
                     break;
                 case FLOAT_TYPE:
-                    arg = new Argument(FloatType.v(), tag);
+                    arg = FloatType.v();
                     break;
                 case CHAR_TYPE:
-                    arg = new Argument(CharType.v(), tag);
+                    arg = CharType.v();
                     break;
                 case STRING_TYPE:
-                    arg = new Argument(RefType.v(STRING_CLASS), tag);
+                    arg = RefType.v(STRING_CLASS);
                     break;
                 default: // considered to be an Object where type is the complete name of the corresponding class
-                    arg = new Argument(RefType.v(type), tag);
+                    arg = RefType.v(type);
                     break;
             }
             argumentList.add(arg);

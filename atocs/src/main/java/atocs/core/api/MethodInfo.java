@@ -1,12 +1,14 @@
 package atocs.core.api;
 
+import soot.Type;
+
 import java.util.List;
 
 public class MethodInfo {
     private final String operation;
-    private final List<Argument> arguments;
+    private final List<Type> arguments;
 
-    MethodInfo(String operation, List<Argument> arguments) {
+    MethodInfo(String operation, List<Type> arguments) {
         this.operation = operation;
         this.arguments = arguments;
     }
@@ -15,7 +17,7 @@ public class MethodInfo {
         return this.operation;
     }
 
-    List<Argument> getArguments() {
+    List<Type> getArguments() {
         return arguments;
     }
 
