@@ -18,6 +18,7 @@ public class HBase98Plugin extends HBasePlugin {
         HBaseDbName(String s) {
             value = s;
         }
+        @Override
         public String toString() {
             return this.value;
         }
@@ -74,7 +75,7 @@ public class HBase98Plugin extends HBasePlugin {
         }
 
         if (tableNames.isEmpty()) {
-            logger.error("Unable to determine table name in " + invokeExprState.getScopeMethod());
+            logger.error("Unable to determine table name in {}", invokeExprState.getScopeMethod());
             return;
         }
 

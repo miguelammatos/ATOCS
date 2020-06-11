@@ -352,7 +352,7 @@ public class CodeAnalyser {
             }
         }
         if (methodInvokeExprs.isEmpty())
-            logger.info("Unable to find method invocation {} from object reference.", methodName);
+            logger.debug("Unable to find method invocation {} from object reference.", methodName);
         return methodInvokeExprs;
     }
 
@@ -490,7 +490,7 @@ public class CodeAnalyser {
             enumValues.add(new StringValueState(enumValue.getValue().getField().getName(), enumValue));
 
         if (enumValues.isEmpty())
-            logger.warn("Unable to find static field reference with type " + enumType);
+            logger.info("Unable to find static field reference with type {}", enumType);
         return enumValues;
     }
 
@@ -530,7 +530,7 @@ public class CodeAnalyser {
             }
             logger.trace("Outside Loop");
         }
-        if (constantValues.isEmpty()) logger.info("Unable to get constant from variable " + variableRef.getValue());
+        if (constantValues.isEmpty()) logger.debug("Unable to get constant from variable {}", variableRef.getValue());
         return constantValues;
     }
 
@@ -554,9 +554,9 @@ public class CodeAnalyser {
         else if (constant instanceof StringConstant)
             value = ((StringConstant) constant).value;
         if (constant instanceof NullConstant)
-            logger.info("Obtained a null constant.");
+            logger.debug("Obtained a null constant.");
         else if (value.equals("?"))
-            logger.error("Unable to determine String value of Constant " + constant.getClass());
+            logger.warn("Unable to determine String value of Constant {}", constant.getClass());
         return new StringValueState(value, constantState);
     }
 
@@ -635,7 +635,7 @@ public class CodeAnalyser {
             thisParameterValueStates = allParameterValues.get(parameter.getIndex());
 
         if (thisParameterValueStates.isEmpty())
-            logger.info("Unable to determine parameter value with index " + parameter.getIndex() + " for method " +
+            logger.debug("Unable to determine parameter value with index {} for method {}", parameter.getIndex(),
                     parameter.getScopeMethod().getSignature());
         return thisParameterValueStates;
     }
@@ -682,8 +682,8 @@ public class CodeAnalyser {
             }
         }
         if (parametersValueStates.isEmpty())
-            logger.info("Unable to determine parameter values from method invocation " + invokeMethod.getSignature() +
-                    " in method " + scopeMethod.getSignature());
+            logger.debug("Unable to determine parameter values from method invocation {} in method {}",
+                    invokeMethod.getSignature(), scopeMethod.getSignature());
         return parametersValueStates;
     }
 
@@ -699,7 +699,7 @@ public class CodeAnalyser {
             returnValueStates = getReturnValueFromSootMethod(invokeExprState.getValue().getMethod(),
                     invokeExprState.getScopeMethod(), invokeExprState);
         else
-            logger.info("Not reanalysing recursive method " + invokeExprState.getValue().getMethod().getSignature());
+            logger.debug("Not reanalysing recursive method {}", invokeExprState.getValue().getMethod().getSignature());
         return returnValueStates;
     }
 
@@ -746,7 +746,7 @@ public class CodeAnalyser {
                     }
                 }
                 if (returnValueStates.isEmpty())
-                    logger.warn("Unable to determine method return value of " + m.getSignature());
+                    logger.info("Unable to determine method return value of {}", m.getSignature());
             }
         }
         return returnValueStates;
@@ -791,8 +791,8 @@ public class CodeAnalyser {
             return getValueOfFieldRef((FieldRefState) varState);
         }
         if (values.isEmpty())
-            logger.info("Unable to find value of variable " + varState.getValue() + " in scope method "
-                    + varState.getScopeMethod().getSignature());
+            logger.debug("Unable to find value of variable {} in scope method {}", varState.getValue(),
+                    varState.getScopeMethod().getSignature());
         return values;
     }
 
@@ -826,7 +826,7 @@ public class CodeAnalyser {
         }
         CodeAnalyser.fieldValues.put(field, fieldValues);
         if (fieldValues.isEmpty())
-            logger.warn("Unable to determine value of attribute " + field.getName() + " from class " +
+            logger.info("Unable to determine value of attribute {} from class {}", field.getName(),
                     fieldClass.getName());
         return fieldValues;
     }
@@ -932,7 +932,7 @@ public class CodeAnalyser {
         else if (value instanceof NewExpr)
             return new NewExprState((NewExpr) value, scopeMethod, stack, scopeMethodParamValues, methodChain,
                     currentStmt, paramMethodInvocations);
-        logger.warn("Unable to create ValueState object with value class " + value.getClass());
+        logger.info("Unable to create ValueState object with value class {}", value.getClass());
         return null;
     }
 
@@ -1012,7 +1012,7 @@ public class CodeAnalyser {
         else if (!subClass.isInterface() && !superClass.isInterface())
             return Scene.v().getActiveHierarchy().isClassSubclassOf(subClass, superClass);
         else {
-            logger.info("Subclass " + subClass.getName() + " cannot be an interface of a Superclass " +
+            logger.debug("Subclass {} cannot be an interface of a Superclass {}", subClass.getName(),
                     superClass.getName());
             return false;
         }
@@ -1095,15 +1095,15 @@ public class CodeAnalyser {
      */
     static boolean assertMethodAnalysis(SootMethod methodToAnalyse) {
         if (!methodToAnalyse.getDeclaringClass().isApplicationClass()) {
-            logger.info("Not analysing non application or library method " + methodToAnalyse.getSignature());
+            logger.debug("Not analysing non application or library method {}", methodToAnalyse.getSignature());
             return false;
         }
         if (methodToAnalyse.isPhantom()) {
-            logger.info("Not analysing phantom method " + methodToAnalyse.getSignature());
+            logger.debug("Not analysing phantom method {}", methodToAnalyse.getSignature());
             return false;
         }
         if (!methodToAnalyse.hasActiveBody()) {
-            logger.info("Not analysing method without activeBody " + methodToAnalyse.getSignature());
+            logger.debug("Not analysing method without activeBody {}", methodToAnalyse.getSignature());
             return false;
         }
         return true;

@@ -285,7 +285,7 @@ public abstract class HBasePlugin extends DatabasePlugin {
         for (InvokeExprState getBytesExpr : stringGetBytesMethodList) {
             stringValues.addAll(CodeAnalyser.getStringAssignedToVariable(getBytesExpr.getInstance()));
         }
-        if (stringValues.isEmpty()) logger.warn("Unable to obtain String value from toBytes method");
+        if (stringValues.isEmpty()) logger.info("Unable to obtain String value from toBytes method");
         return stringValues;
     }
 

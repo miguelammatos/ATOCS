@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FilterHandler98 extends FilterHandler {
-    // TODO check arguments of all these filters for HBase 98
     private final Logger logger = LoggerFactory.getLogger(FilterHandler98.class);
 
     FilterHandler98(RequirementGenerator requirementGenerator) {
@@ -109,7 +108,7 @@ public class FilterHandler98 extends FilterHandler {
                         colQualifierNames, CodeAnalyser.getStringsFromStringValueStates(compareOpEnumValues),
                         comparatorClass);
             } else {
-                logger.error("Unknown init expression of ColumnFilter.");
+                logger.error("Unknown constructor of ColumnFilter.");
             }
         }
     }
@@ -142,7 +141,7 @@ public class FilterHandler98 extends FilterHandler {
                                     CodeAnalyser.getStringsFromStringValueStates(compareOpEnumValues), comparatorClass);
                     }
                 } else {
-                    logger.error("Unknown init expression of ValueFilter.");
+                    logger.error("Unknown constructor of ValueFilter.");
                 }
             }
         }
@@ -164,7 +163,7 @@ public class FilterHandler98 extends FilterHandler {
                 requirementGenerator.generateKeyFilterRequirement(filterClass, tableNames,
                         CodeAnalyser.getStringsFromStringValueStates(compareOpEnumValues), comparatorClass);
             } else {
-                logger.error("Unknown init expression of RowFilter.");
+                logger.error("Unknown constructor of RowFilter.");
             }
         }
     }
@@ -189,7 +188,7 @@ public class FilterHandler98 extends FilterHandler {
                     filterObjects.addAll(CodeAnalyser.getObjsAddedToArray(filterCreateExpr.getArg(0)));
                 } else if (!filterCreateExpr.getArg(0).getValueClassName()
                         .equals(HBaseInfo98.FILTER_LIST_OPERATOR_ENUM)) {
-                    logger.error("Unknown init expression of FilterList.");
+                    logger.error("Unknown constructor of FilterList.");
                 }
             } else if (filterCreateExpr.getArgCount() == 2) {
                 if (CodeAnalyser.isOfType(filterCreateExpr.getArg(1), Constants.JAVA_LIST)) {
@@ -198,7 +197,7 @@ public class FilterHandler98 extends FilterHandler {
                     filterObjects.addAll(CodeAnalyser.getObjsAddedToArray(filterCreateExpr.getArg(0)));
                 }
             } else {
-                logger.error("Unknown init expression of FilterList.");
+                logger.error("Unknown constructor of FilterList.");
             }
         }
         List<InvokeExprState> filterAddMethodList = CodeAnalyser.findMethodInvocationFromObjectRef(
@@ -238,7 +237,7 @@ public class FilterHandler98 extends FilterHandler {
                 requirementGenerator.generateQualifierFilterRequirement(filterClass, tableNames,
                         CodeAnalyser.getStringsFromStringValueStates(compareOpEnumValues), comparatorClass);
             } else {
-                logger.error("Unknown init expression of RowFilter.");
+                logger.error("Unknown constructor of RowFilter.");
             }
         }
     }
@@ -259,7 +258,7 @@ public class FilterHandler98 extends FilterHandler {
                 requirementGenerator.generateFamilyFilterRequirement(filterClass, tableNames,
                         CodeAnalyser.getStringsFromStringValueStates(compareOpEnumValues), comparatorClass);
             } else {
-                logger.error("Unknown init expression of FamilyFilter.");
+                logger.error("Unknown constructor of FamilyFilter.");
             }
         }
     }

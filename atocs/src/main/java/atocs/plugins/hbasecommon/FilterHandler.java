@@ -63,7 +63,7 @@ public abstract class FilterHandler {
                 ValueState filterArgRef = filterCreateExpr.getArg(0);
                 handleFilter(tableNames, filterArgRef, familiesAndQualifiers);
             } else {
-                logger.error("Unknown init expression of SkipFilter.");
+                logger.error("Unknown constructor of SkipFilter.");
             }
         }
     }
@@ -94,7 +94,7 @@ public abstract class FilterHandler {
                     Constants.JAVA_LIST))
                 filterObjects.addAll(CodeAnalyser.getObjsAddedToList(filterCreateExpr.getArg(0)));
             else
-                logger.error("Unknown init expression of FilterListWith.");
+                logger.error("Unknown constructor of FilterListWith.");
         }
         List<InvokeExprState> filterAddFilterListsMethodList = CodeAnalyser.findMethodInvocationFromObjectRef(
                 HBaseInfo.FILTER_LIST_WITH_ADD_FILTER_LISTS_METHOD, filterRef);

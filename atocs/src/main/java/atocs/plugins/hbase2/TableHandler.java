@@ -47,7 +47,7 @@ public class TableHandler {
                         tableNames.addAll(HBase2Plugin.getStringFromToBytesMethod(
                                 tableNameValueOfMethod.getArg(0)));
                     } else {
-                        logger.error("Cannot recognize method " + tableNameValueOfMethod.getValue());
+                        logger.error("Unable to recognise method " + tableNameValueOfMethod.getValue());
                     }
                     for (StringValueState tableName : tableNames) {
                         if (!tableName.getStringValue().equals("?"))
@@ -55,7 +55,7 @@ public class TableHandler {
                     }
                 }
             } else {
-                logger.error("Cannot recognize method " + connectionGetTableMethod.getValue());
+                logger.error("Unable to recognise method " + connectionGetTableMethod.getValue());
             }
         }
         return possibleTableNames;

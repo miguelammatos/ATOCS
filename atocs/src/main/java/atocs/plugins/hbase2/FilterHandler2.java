@@ -186,7 +186,7 @@ public class FilterHandler2 extends FilterHandler {
                 requirementGenerator.generateQualifierFilterRequirement(filterClass, tableNames,
                         CodeAnalyser.getStringsFromStringValueStates(compareOpEnumValues), comparatorClass);
             } else {
-                logger.error("Unknown init expression of RowFilter.");
+                logger.error("Unknown constructor of RowFilter.");
             }
         }
     }
@@ -207,7 +207,7 @@ public class FilterHandler2 extends FilterHandler {
                 requirementGenerator.generateFamilyFilterRequirement(filterClass, tableNames,
                         CodeAnalyser.getStringsFromStringValueStates(compareOpEnumValues), comparatorClass);
             } else {
-                logger.error("Unknown init expression of FamilyFilter.");
+                logger.error("Unknown constructor of FamilyFilter.");
             }
         }
     }
@@ -231,13 +231,13 @@ public class FilterHandler2 extends FilterHandler {
                 } else if (CodeAnalyser.isArrayOf(filterCreateExpr.getArg(0), HBaseInfo.FILTER)) {
                     filterObjects.addAll(CodeAnalyser.getObjsAddedToArray(filterCreateExpr.getArg(0)));
                 } else {
-                    logger.error("Unknown init expression of FilterList.");
+                    logger.error("Unknown constructor of FilterList.");
                 }
             } else if (filterCreateExpr.getArgCount() == 2 && CodeAnalyser.isOfType(filterCreateExpr.getArg(1),
                     Constants.JAVA_LIST)) {
                 filterObjects.addAll(CodeAnalyser.getObjsAddedToList(filterCreateExpr.getArg(1)));
             } else {
-                logger.error("Unknown init expression of FilterList.");
+                logger.error("Unknown constructor of FilterList.");
             }
         }
         List<InvokeExprState> filterAddMethodList = CodeAnalyser.findMethodInvocationFromObjectRef(
