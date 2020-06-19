@@ -15,15 +15,15 @@ public class Main
 
     public static void main(String[] args) {
 
-        if (args.length != 1) {
+        if (args.length != 2) {
             System.out.println("ERROR: Program arguments not correct.");
-            System.out.println("Usage: mvn compile exec:java -Dexec.args=\"configFilePath\"");
-            System.out.println("Note: The configuration file must respect the system standard.");
+            System.out.println("Usage: mvn compile exec:java -Dexec.args=\"appConfigFilePath cipherConfigFilePath\"");
+            System.out.println("Note: The configuration files must respect the system standard.");
             System.exit(1);
         }
 
         try {
-            executeAnalysis(Parser.getInstance().parseConfigFile(args[0]));
+            executeAnalysis(Parser.getInstance().parseConfigFiles(args[0], args[1]));
         } catch (SystemException e) {
             System.err.println(e.getMessage());
             System.exit(1);

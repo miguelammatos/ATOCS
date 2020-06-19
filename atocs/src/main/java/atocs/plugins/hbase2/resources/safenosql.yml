@@ -7,12 +7,9 @@
 #  - name: methodname
 #    operation: type of database operation performed
 #    args:
-#      - - type: fieldType  # - - represents a set of arguments for the method defined above
-#          tag: ...
-#        - type: fieldType
-#          tag: ...
-#      - - type: fieldType # - - this is a new set of arguments for the method defined above
-#          tag: ...
+#      - - fieldType  # - - represents a set of arguments for the method defined above
+#        - fieldType
+#      - - fieldType # - - this is a new set of arguments for the method defined above
 
 className: pt.uminho.haslab.safeclient.secureTable.CryptoTable
 methods:

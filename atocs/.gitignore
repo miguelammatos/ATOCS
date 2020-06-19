@@ -37,5 +37,6 @@ target/
 sootOutput/
 
 # ATOCS
-config.yml
+app_config.yml
+cipher_config.yml
 atocs-output.txt

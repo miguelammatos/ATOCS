@@ -1,15 +1,4 @@
-# Configuration file
-
-# Database system used by the application.
-database: HBase2
-
-# Application directories containing the .class files to analyse as well as the libraries' .class or .jar files.
-directoriesToAnalyse:
-    - ../example-applications/simple-hbase-application/target/classes
-
-# Main classes of the application, which contain the main method.
-entryPoints:
-    - Main
+# Ciphers Configuration file
 
 # Encryption schemes ordered by preference.
 cipherPreferences:

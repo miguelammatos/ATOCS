@@ -39,32 +39,42 @@ public class Parser {
     /**
      * Parses the yaml config file with information about the application to be analysed.
      *
-     * @param configFile path of the yaml file with the application information.
+     * @param appConfigFile path of the yaml file with the application information.
+     * @param cipherConfigFile path of the yaml file with the cipher information.
      */
-    AtocsConfig parseConfigFile(String configFile) throws SystemException {
+    AtocsConfig parseConfigFiles(String appConfigFile, String cipherConfigFile) throws SystemException {
+        String databaseName;
+        List<String> directoriesToAnalyse = new ArrayList<>();
+        List<String> entryPoints = new ArrayList<>();
+        List<String> cipherPreferences = new ArrayList<>();
+        Map<String, List<String>> supportedCiphers = new HashMap<>();
         try {
-            YamlReader reader = new YamlReader(new FileReader(configFile));
+            YamlReader reader = new YamlReader(new FileReader(appConfigFile));
             Map configMap = (Map) reader.read();
-            String databaseName = (String) configMap.get("database");
-            List<String> directoriesToAnalyse = new ArrayList<>();
+            databaseName = (String) configMap.get("database");
             if (configMap.get("directoriesToAnalyse") != null) {
                 for (Object directory : (List)configMap.get("directoriesToAnalyse")) {
                     directoriesToAnalyse.add((String) directory);
                 }
             }
-            List<String> entryPoints = new ArrayList<>();
             if (configMap.get("entryPoints") != null) {
                 for (Object entryPoint : (List)configMap.get("entryPoints")) {
                     entryPoints.add((String) entryPoint);
                 }
             }
-            List<String> cipherPreferences = new ArrayList<>();
+        } catch (FileNotFoundException fnfe) {
+            throw new FileException(appConfigFile);
+        } catch (YamlException ye) {
+            throw new ParsingException(appConfigFile);
+        }
+        try {
+            YamlReader reader = new YamlReader(new FileReader(cipherConfigFile));
+            Map configMap = (Map) reader.read();
             if (configMap.get("cipherPreferences") != null) {
                 for (Object cipher : (List)configMap.get("cipherPreferences")) {
                     cipherPreferences.add((String) cipher);
                 }
             }
-            Map<String, List<String>> supportedCiphers = new HashMap<>();
             if (configMap.get("supportedCiphers") != null) {
                 for (Object cipherObj : (List)configMap.get("supportedCiphers")) {
                     Map cipherMap = (Map) cipherObj;
@@ -79,12 +89,12 @@ public class Parser {
                     supportedCiphers.put(cipherName, properties);
                 }
             }
-            return new AtocsConfig(databaseName, directoriesToAnalyse, entryPoints, cipherPreferences, supportedCiphers);
         } catch (FileNotFoundException fnfe) {
-            throw new FileException(configFile);
+            throw new FileException(cipherConfigFile);
         } catch (YamlException ye) {
-            throw new ParsingException(configFile);
+            throw new ParsingException(cipherConfigFile);
         }
+        return new AtocsConfig(databaseName, directoriesToAnalyse, entryPoints, cipherPreferences, supportedCiphers);
     }
 
     /**
