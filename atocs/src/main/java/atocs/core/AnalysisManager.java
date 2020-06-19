@@ -5,7 +5,11 @@ import org.slf4j.LoggerFactory;
 import soot.*;
 import atocs.core.api.API;
 import atocs.core.exceptions.SystemException;
+import soot.jimple.SwitchStmt;
+import soot.toolkits.graph.BriefUnitGraph;
+import soot.toolkits.graph.UnitGraph;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +52,28 @@ public class AnalysisManager extends SceneTransformer {
 
         Configurator.getInstance().showReport();
         System.out.println("ATOCS final output is presented in the " + Constants.REPORT_FILE_NAME + " file.");
+    }
+
+    void test() {
+        SootMethod m = Scene.v().getSootClass("Db").getMethodByName("increment");
+        UnitGraph graph = new BriefUnitGraph(m.getActiveBody());
+        Iterator<Unit> unitIt = graph.iterator();
+
+        while (unitIt.hasNext()) {
+            Unit unit = unitIt.next();
+            System.out.println(unit);
+//            System.out.println(graph.getPredsOf(unit));
+//            System.out.println(graph.getSuccsOf(unit));
+            System.out.println("");
+        }
+
+//        CallGraph cg = Scene.v().getCallGraph();
+//        Iterator targets = new Targets(cg.edgesOutOf(m));
+//        while (targets.hasNext()) {
+//            SootMethod me = (SootMethod) targets.next();
+//            System.out.println("TARGET: " + me.getDeclaringClass().getName() + " " + me.getName());
+//        }
+
     }
 
 }

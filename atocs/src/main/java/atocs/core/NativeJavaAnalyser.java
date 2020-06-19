@@ -14,6 +14,52 @@ public class NativeJavaAnalyser {
     private static final Logger logger = LoggerFactory.getLogger(NativeJavaAnalyser.class);
 
     /**
+     * Determines if the valueState provided is an object representation of a Java primitive type. Ex: Integer, Float,
+     * Double, etc.
+     *
+     * @param valueState object reference.
+     * @return the name of the Java Object or null the reference is not a Java primitive object type.
+     */
+    static String isJavaPrimitiveObject(ValueState valueState) {
+        if (CodeAnalyser.isOfType(valueState, INTEGER_CLASS))
+            return INTEGER_CLASS;
+        else if (CodeAnalyser.isOfType(valueState, SHORT_CLASS))
+            return SHORT_CLASS;
+        else if (CodeAnalyser.isOfType(valueState, LONG_CLASS))
+            return LONG_CLASS;
+        else if (CodeAnalyser.isOfType(valueState, DOUBLE_CLASS))
+            return DOUBLE_CLASS;
+        else if (CodeAnalyser.isOfType(valueState, FLOAT_CLASS))
+            return FLOAT_CLASS;
+        else if (CodeAnalyser.isOfType(valueState, BOOLEAN_CLASS))
+            return BOOLEAN_CLASS;
+        else if (CodeAnalyser.isOfType(valueState, CHAR_CLASS))
+            return CHAR_CLASS;
+        else if (CodeAnalyser.isOfType(valueState, BYTE_CLASS))
+            return BYTE_CLASS;
+        return null;
+    }
+
+    /**
+     * Obtains the value associated with a Java object representation of a primitive type.
+     *
+     * @param objRef reference to the Java object.
+     * @return the possible values associated with the provided object.
+     */
+    static List<ValueState> getValueFromJavaPrimitiveObject(ValueState objRef) {
+        List<ValueState> values = new ArrayList<>();
+        if (isJavaPrimitiveObject(objRef) != null) {
+            List<InvokeExprState> initExprs = CodeAnalyser.findMethodInvocationFromObjectRef(INIT_METHOD, objRef);
+            for (InvokeExprState initExpr : initExprs) {
+                if (initExpr.getArgCount() == 1) {
+                    values.add(initExpr.getArg(0));
+                }
+            }
+        }
+        return values;
+    }
+
+    /**
      * Obtains a collection class name from a ValueState.
      *
      * @param valueState collection reference.
@@ -77,7 +123,7 @@ public class NativeJavaAnalyser {
             case JAVA_ITERATOR:
                 return getObjsAddedToCollectionFromIterator(collectionRefState);
             default:
-                logger.error("Unknow Java Collection " + collection);
+                logger.warn("Unsupported Java Collection " + collection);
                 return new ArrayList<>();
         }
     }
@@ -119,7 +165,7 @@ public class NativeJavaAnalyser {
             else if (addAllMethodInvoke.getArgCount() == 2)
                 otherCollectionsToAnalyse.add(addAllMethodInvoke.getArg(1));
             else
-                logger.error("Unknown List " + JAVA_LIST_ADD_ALL_METHOD + " method");
+                logger.warn("Unknown List " + JAVA_LIST_ADD_ALL_METHOD + " method");
         }
         for (InvokeExprState addOrSetMethodInvoke : addAndSetMethodInvokes) {
             if (addOrSetMethodInvoke.getArgCount() == 1)
@@ -127,7 +173,7 @@ public class NativeJavaAnalyser {
             else if (addOrSetMethodInvoke.getArgCount() == 2)
                 objsAdded.add(addOrSetMethodInvoke.getArg(1));
             else
-                logger.error("Unknown List " + JAVA_LIST_ADD_METHOD + " or " + JAVA_LIST_SET_METHOD + " method");
+                logger.warn("Unknown List " + JAVA_LIST_ADD_METHOD + " or " + JAVA_LIST_SET_METHOD + " method");
         }
         for (ValueState collection : otherCollectionsToAnalyse) {
             objsAdded.addAll(getObjsAddedToCollection(collection));
@@ -171,13 +217,13 @@ public class NativeJavaAnalyser {
             else if (addAllMethodInvoke.getArgCount() == 2)
                 otherCollectionsToAnalyse.add(addAllMethodInvoke.getArg(1));
             else
-                logger.error("Unknown Set " + JAVA_SET_ADD_ALL_METHOD + " method");
+                logger.warn("Unknown Set " + JAVA_SET_ADD_ALL_METHOD + " method");
         }
         for (InvokeExprState addMethodInvoke : addMethodInvokes) {
             if (addMethodInvoke.getArgCount() == 1)
                 objsAdded.add(addMethodInvoke.getArg(0));
             else
-                logger.error("Unknown Set " + JAVA_SET_ADD_METHOD + " method");
+                logger.warn("Unknown Set " + JAVA_SET_ADD_METHOD + " method");
         }
         for (ValueState collection : otherCollectionsToAnalyse) {
             objsAdded.addAll(getObjsAddedToCollection(collection));

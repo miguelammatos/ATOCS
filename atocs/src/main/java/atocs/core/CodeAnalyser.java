@@ -576,10 +576,13 @@ public class CodeAnalyser {
         } else if (valueState instanceof InvokeExprState) {
             InvokeExprState invokeExprState = (InvokeExprState) valueState;
             String collection = NativeJavaAnalyser.isCollectionMethod(invokeExprState);
-            if (collection != null && invokeExprState.hasInstance())
-                return NativeJavaAnalyser.getObjsAddedToCollection(collection, invokeExprState.getInstance());
-            else
-                return getReturnValueFromInvokeExpr(invokeExprState);
+            if (invokeExprState.hasInstance()) {
+                if (collection != null)
+                    return NativeJavaAnalyser.getObjsAddedToCollection(collection, invokeExprState.getInstance());
+                else if (NativeJavaAnalyser.isJavaPrimitiveObject(invokeExprState.getInstance()) != null)
+                    return NativeJavaAnalyser.getValueFromJavaPrimitiveObject(invokeExprState.getInstance());
+            }
+            return getReturnValueFromInvokeExpr(invokeExprState);
         } else if (valueState instanceof ParameterRefState) {
             return getParameterValues((ParameterRefState) valueState);
         } else if (valueState instanceof FieldRefState || valueState instanceof LocalState) {
