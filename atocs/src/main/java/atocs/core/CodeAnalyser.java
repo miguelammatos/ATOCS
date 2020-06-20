@@ -577,7 +577,10 @@ public class CodeAnalyser {
             InvokeExprState invokeExprState = (InvokeExprState) valueState;
             String collection = NativeJavaAnalyser.isCollectionMethod(invokeExprState);
             if (invokeExprState.hasInstance()) {
-                if (collection != null)
+                if (NativeJavaAnalyser.isJavaPrimitiveValueMethod(invokeExprState)) {
+                    nextValueStates.add(invokeExprState.getInstance());
+                    return nextValueStates;
+                } else if (collection != null)
                     return NativeJavaAnalyser.getObjsAddedToCollection(collection, invokeExprState.getInstance());
                 else if (NativeJavaAnalyser.isJavaPrimitiveObject(invokeExprState.getInstance()) != null)
                     return NativeJavaAnalyser.getValueFromJavaPrimitiveObject(invokeExprState.getInstance());
@@ -586,6 +589,10 @@ public class CodeAnalyser {
         } else if (valueState instanceof ParameterRefState) {
             return getParameterValues((ParameterRefState) valueState);
         } else if (valueState instanceof FieldRefState || valueState instanceof LocalState) {
+            if (NativeJavaAnalyser.isJavaPrimitiveObject(valueState) != null)
+                nextValueStates.addAll(NativeJavaAnalyser.getValueFromJavaPrimitiveObject(valueState));
+            if (!nextValueStates.isEmpty())
+                return nextValueStates;
             return getValueOfVar(valueState);
         }
         return nextValueStates;
@@ -720,7 +727,12 @@ public class CodeAnalyser {
         List<ValueState> returnValueStates = new ArrayList<>();
         Hierarchy hierarchy = Scene.v().getActiveHierarchy();
         if (method.isAbstract()) {
-            List<SootMethod> concreteMethodList = hierarchy.resolveAbstractDispatch(method.getDeclaringClass(), method);
+            List<SootMethod> concreteMethodList = new ArrayList<>();
+            try {
+                concreteMethodList = hierarchy.resolveAbstractDispatch(method.getDeclaringClass(), method);
+            } catch (RuntimeException e) {
+                logger.info(e.getMessage());
+            }
             for (SootMethod concreteMethod : concreteMethodList) {
                 if (!concreteMethod.equals(scopeMethod))
                     returnValueStates.addAll(getReturnValueFromSootMethod(concreteMethod, scopeMethod,

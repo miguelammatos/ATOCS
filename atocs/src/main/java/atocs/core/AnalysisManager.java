@@ -52,6 +52,8 @@ public class AnalysisManager extends SceneTransformer {
 
         Configurator.getInstance().showReport();
         System.out.println("ATOCS final output is presented in the " + Constants.REPORT_FILE_NAME + " file.");
+
+
     }
 
     void test() {

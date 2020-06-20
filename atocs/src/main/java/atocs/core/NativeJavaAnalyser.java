@@ -41,6 +41,31 @@ public class NativeJavaAnalyser {
     }
 
     /**
+     * Determines if the valueState provided is an object representation of a Java primitive type. Ex: Integer, Float,
+     * Double, etc.
+     *
+     * @param invokeExprState invoke expression reference.
+     * @return the name of the Java Object or null the reference is not a Java primitive object type.
+     */
+    static boolean isJavaPrimitiveValueMethod(InvokeExprState invokeExprState) {
+        if (isJavaPrimitiveObject(invokeExprState.getInstance()) != null) {
+            String methodName = invokeExprState.getMethodName();
+            switch (methodName) {
+                case INTEGER_CLASS_VALUE_METHOD:
+                case SHORT_CLASS_VALUE_METHOD:
+                case LONG_CLASS_VALUE_METHOD:
+                case DOUBLE_CLASS_VALUE_METHOD:
+                case FLOAT_CLASS_VALUE_METHOD:
+                case BOOLEAN_CLASS:
+                case CHAR_CLASS_VALUE_METHOD:
+                case BYTE_CLASS_VALUE_METHOD:
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Obtains the value associated with a Java object representation of a primitive type.
      *
      * @param objRef reference to the Java object.
@@ -48,11 +73,20 @@ public class NativeJavaAnalyser {
      */
     static List<ValueState> getValueFromJavaPrimitiveObject(ValueState objRef) {
         List<ValueState> values = new ArrayList<>();
-        if (isJavaPrimitiveObject(objRef) != null) {
-            List<InvokeExprState> initExprs = CodeAnalyser.findMethodInvocationFromObjectRef(INIT_METHOD, objRef);
+        String objectClass = isJavaPrimitiveObject(objRef);
+        if (objectClass != null) {
+
+            List<InvokeExprState> initExprs = CodeAnalyser.findObjConstructorInvocationFromObjRef(objRef);
             for (InvokeExprState initExpr : initExprs) {
                 if (initExpr.getArgCount() == 1) {
                     values.add(initExpr.getArg(0));
+                }
+            }
+            List<InvokeExprState> valueOfExprs = CodeAnalyser.findMethodInvocationAssignedToVariable(objectClass,
+                    VALUE_OF_METHOD, objRef);
+            for (InvokeExprState valueOfExpr : valueOfExprs) {
+                if (valueOfExpr.getArgCount() == 1) {
+                    values.add(valueOfExpr.getArg(0));
                 }
             }
         }
@@ -70,8 +104,10 @@ public class NativeJavaAnalyser {
             return JAVA_LIST;
         else if (CodeAnalyser.isOfType(valueState, JAVA_SET))
             return JAVA_SET;
-        else if (CodeAnalyser.isOfType(valueState, JAVA_SET))
+        else if (CodeAnalyser.isOfType(valueState, JAVA_ITERATOR))
             return JAVA_ITERATOR;
+        else if (CodeAnalyser.isOfType(valueState, JAVA_MAP))
+            return JAVA_MAP;
         return null;
     }
 
@@ -85,10 +121,12 @@ public class NativeJavaAnalyser {
         if (invokeExprState.hasInstance()) {
             if (CodeAnalyser.isOfType(invokeExprState.getInstance(), JAVA_LIST))
                 return JAVA_LIST;
-            else if (CodeAnalyser.isOfType(invokeExprState.getInstance(), JAVA_LIST))
+            else if (CodeAnalyser.isOfType(invokeExprState.getInstance(), JAVA_SET))
                 return JAVA_SET;
             else if (CodeAnalyser.isOfType(invokeExprState.getInstance(), JAVA_ITERATOR))
                 return JAVA_ITERATOR;
+            else if (CodeAnalyser.isOfType(invokeExprState.getInstance(), JAVA_MAP))
+                return JAVA_MAP;
         }
         return null;
     }
@@ -122,6 +160,8 @@ public class NativeJavaAnalyser {
                 return getObjsAddedToSet(collectionRefState);
             case JAVA_ITERATOR:
                 return getObjsAddedToCollectionFromIterator(collectionRefState);
+            case JAVA_MAP:
+                return getObjsAddedToMap(collectionRefState);
             default:
                 logger.warn("Unsupported Java Collection " + collection);
                 return new ArrayList<>();
@@ -253,6 +293,68 @@ public class NativeJavaAnalyser {
             if (setGetIteratorExpr.hasInstance()) {
                 objsAdded.addAll(getObjsAddedToCollection(JAVA_SET, setGetIteratorExpr.getInstance()));
             }
+        }
+
+        return objsAdded;
+    }
+
+    /**
+     * Obtains the object references added to a Map. Supports Map with the following methods: put, putAll and
+     * putIfAbsent.
+     * Only returns the values added to the map and not the keys
+     *
+     * @param mapRefState map reference state.
+     * @return all object references added to a Map, if any.
+     */
+    static List<ValueState> getObjsAddedToMap(ValueState mapRefState) {
+        List<ValueState> objsAdded = new ArrayList<>();
+
+        List<ValueState> mapRefs = CodeAnalyser.getAllObjRefsFromSingleRef(mapRefState);
+        List<InvokeExprState> initMethodInvokes = new ArrayList<>();
+        List<InvokeExprState> putAndPutIfAbsentMethodInvokes = new ArrayList<>();
+        List<InvokeExprState> putAllMethodInvokes = new ArrayList<>();
+        List<InvokeExprState> replaceMethodInvokes = new ArrayList<>();
+        // For each map object reference find different method invocations to analyse
+        for (ValueState mapRef : mapRefs) {
+            initMethodInvokes.addAll(CodeAnalyser.findMethodInvocationFromSingleObjectRef(INIT_METHOD, mapRef,
+                    new ArrayList<>()));
+            putAndPutIfAbsentMethodInvokes.addAll(CodeAnalyser.findMethodInvocationFromSingleObjectRef(JAVA_MAP_PUT,
+                    mapRef, new ArrayList<>()));
+            putAndPutIfAbsentMethodInvokes.addAll(CodeAnalyser.findMethodInvocationFromSingleObjectRef(
+                    JAVA_MAP_PUT_IF_ABSENT, mapRef, new ArrayList<>()));
+            putAllMethodInvokes.addAll(CodeAnalyser.findMethodInvocationFromSingleObjectRef(JAVA_MAP_PUT_ALL,
+                    mapRef, new ArrayList<>()));
+            replaceMethodInvokes.addAll(CodeAnalyser.findMethodInvocationFromSingleObjectRef(JAVA_MAP_REPLACE,
+                    mapRef, new ArrayList<>()));
+        }
+
+        List<ValueState> otherCollectionsToAnalyse = new ArrayList<>();
+        for (InvokeExprState initMethodInvoke : initMethodInvokes) {
+            if (initMethodInvoke.getArgCount() == 1 && isCollectionClass(initMethodInvoke.getArg(0)) != null)
+                otherCollectionsToAnalyse.add(initMethodInvoke.getArg(0));
+        }
+        for (InvokeExprState putAndPutIfAbsentMethodInvoke : putAndPutIfAbsentMethodInvokes) {
+            if (putAndPutIfAbsentMethodInvoke.getArgCount() == 2)
+                objsAdded.add(putAndPutIfAbsentMethodInvoke.getArg(1));
+            else
+                logger.warn("Unknown Map " + JAVA_MAP_PUT + " or " + JAVA_MAP_PUT_IF_ABSENT + " method");
+        }
+        for (InvokeExprState putAllMethodInvoke : putAllMethodInvokes) {
+            if (putAllMethodInvoke.getArgCount() == 1 && isCollectionClass(putAllMethodInvoke.getArg(0)) != null)
+                otherCollectionsToAnalyse.add(putAllMethodInvoke.getArg(0));
+            else
+                logger.warn("Unknown Map " + JAVA_MAP_PUT_ALL + " method");
+        }
+        for (InvokeExprState replaceMethodInvoke : replaceMethodInvokes) {
+            if (replaceMethodInvoke.getArgCount() == 2)
+                objsAdded.add(replaceMethodInvoke.getArg(1));
+            else if (replaceMethodInvoke.getArgCount() == 3)
+                objsAdded.add(replaceMethodInvoke.getArg(2));
+            else
+                logger.warn("Unknown Map " + JAVA_MAP_REPLACE + " method");
+        }
+        for (ValueState collection : otherCollectionsToAnalyse) {
+            objsAdded.addAll(getObjsAddedToCollection(collection));
         }
 
         return objsAdded;

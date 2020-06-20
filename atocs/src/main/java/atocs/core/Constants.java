@@ -23,33 +23,32 @@ public class Constants {
 
     // Map
     public static final String JAVA_MAP = "java.util.Map";
+    public static final String JAVA_MAP_PUT = "put";
+    public static final String JAVA_MAP_PUT_ALL = "putAll";
+    public static final String JAVA_MAP_PUT_IF_ABSENT = "putIfAbsent";
+    public static final String JAVA_MAP_REPLACE = "replace";
 
     // String
     public static final String STRING_CLASS = "java.lang.String";
     public static final String STRING_GET_BYTES_METHOD = "getBytes";
 
-    // Integer
+    // Primitive Objects
     public static final String INTEGER_CLASS = "java.lang.Integer";
-
-    // Short
+    public static final String INTEGER_CLASS_VALUE_METHOD = "intValue";
     public static final String SHORT_CLASS = "java.lang.Short";
-
-    // Long
+    public static final String SHORT_CLASS_VALUE_METHOD = "shortValue";
     public static final String LONG_CLASS = "java.lang.Long";
-
-    // Double
+    public static final String LONG_CLASS_VALUE_METHOD = "longValue";
     public static final String DOUBLE_CLASS = "java.lang.Double";
-
-    // Float
+    public static final String DOUBLE_CLASS_VALUE_METHOD = "doubleValue";
     public static final String FLOAT_CLASS = "java.lang.Float";
-
-    // Boolean
+    public static final String FLOAT_CLASS_VALUE_METHOD = "floatValue";
     public static final String BOOLEAN_CLASS = "java.lang.Boolean";
-
-    // Character
+    public static final String BOOLEAN_CLASS_VALUE_METHOD = "booleanValue";
     public static final String CHAR_CLASS = "java.lang.Character";
-
-    // Byte
+    public static final String CHAR_CLASS_VALUE_METHOD = "charValue";
     public static final String BYTE_CLASS = "java.lang.Byte";
+    public static final String BYTE_CLASS_VALUE_METHOD = "byteValue";
+    public static final String VALUE_OF_METHOD = "valueOf";
 
 }
