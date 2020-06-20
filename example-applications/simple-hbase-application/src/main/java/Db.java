@@ -5,6 +5,8 @@ import org.apache.hadoop.hbase.filter.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Db extends DbAbs{
     private Connection connection;
@@ -17,8 +19,7 @@ public class Db extends DbAbs{
         try {
             this.connection = ConnectionFactory.createConnection(config);
             setMyTable(connection.getTable(TableName.valueOf("MyTable")));
-            if (Fields.TABLE_NAME.equals("")) {
-            } else
+            if (Fields.TABLE_NAME.equals(""))
                 t = connection.getTable(TableName.valueOf("TTable"));
         } catch (IOException e) {
             e.printStackTrace();
@@ -78,7 +79,7 @@ public class Db extends DbAbs{
 
     public Get getGetOp(String row) {
         Get get = new Get(Bytes.toBytes(row));
-        get.setFilter(new SingleColumnValueFilter(Bytes.toBytes("User"), Bytes.toBytes("Name"), CompareOperator.GREATER, Bytes.toBytes("Bla")));
+        get.setFilter(new SingleColumnValueFilter(Bytes.toBytes("User"), Bytes.toBytes("Name"), CompareOperator.GREATER, Bytes.toBytes("Val")));
         return get;
     }
 
@@ -152,31 +153,28 @@ public class Db extends DbAbs{
         try {
             int x = (int) Math.random();
             if (x == 0)
-                s.addColumn("FAM".getBytes(), "OLA".getBytes());
+                s.addColumn("FAM".getBytes(), "Q1".getBytes());
             else {
-                s.addColumn("FAM".getBytes(), "BLA".getBytes());
+                s.addColumn("FAM".getBytes(), "Q2".getBytes());
             }
-            s.setFilter(new SingleColumnValueFilter("FAM".getBytes(), Bytes.toBytes("ADEUS"), CompareOperator.GREATER, Bytes.toBytes("Jo")));
+            s.setFilter(new SingleColumnValueFilter("FAM".getBytes(), Bytes.toBytes("Q2"), CompareOperator.GREATER, Bytes.toBytes("Jo")));
             t.getScanner(s);
-
-//            if (x == 0)
-//                s.addColumn("FAM".getBytes(), "ADEUS".getBytes());
-
-//            if (s.hasFamilies())
-//                s.addColumn("FAM".getBytes(), "OLA".getBytes());
-//            else
-//                s.addColumn("FAM".getBytes(), "QUA".getBytes());
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void bla(Scan s) {
-        if (s.hasFamilies())
-            s.addColumn("FAM".getBytes(), "QUA".getBytes());
-        else
-            s.addColumn("FAM".getBytes(), "QUA".getBytes());
+    public void increment() {
+        Set<Integer> set = new HashSet<>();
+        set.add(123);
+        set.add(000);
+        try {
+            for(Integer i : set)
+                t.incrementColumnValue("row".getBytes(), "F1".getBytes(), Bytes.toBytes(i), 100);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
