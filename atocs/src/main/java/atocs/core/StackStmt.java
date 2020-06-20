@@ -61,6 +61,6 @@ public class StackStmt {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getStmt(), getConditionalStmts(), getScopeMethod());
+        return Objects.hash(getStmt(), getScopeMethod());
     }
 }

@@ -25,11 +25,11 @@ public class IfConditionalStmt extends ConditionalStmt {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         IfConditionalStmt that = (IfConditionalStmt) o;
-        return Objects.equals(getDependent(), that.getDependent());
+        return Objects.equals(getDependent().getStackStmt(), that.getDependent().getStackStmt());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getDependent());
+        return Objects.hash(super.hashCode(), getDependent().getStackStmt());
     }
 }
