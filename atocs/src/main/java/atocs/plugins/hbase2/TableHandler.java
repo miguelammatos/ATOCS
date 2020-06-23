@@ -1,5 +1,6 @@
 package atocs.plugins.hbase2;
 
+import atocs.plugins.hbasecommon.HBaseInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import atocs.core.CodeAnalyser;
@@ -30,7 +31,7 @@ public class TableHandler {
             if (connectionGetTableMethod.getArgCount() == 1) {
                 //TableName, arg of method Connection.getTable(...)
                 List<InvokeExprState> tableNameValueOfMethodList = CodeAnalyser.findMethodInvocationAssignedToVariable(
-                        HBaseInfo2.TABLENAME_CLASS, HBaseInfo2.TABLENAME_VALUE_OF_METHOD,
+                        HBaseInfo.TABLENAME_CLASS, HBaseInfo.TABLENAME_VALUE_OF_METHOD,
                         connectionGetTableMethod.getArg(0));
                 for (InvokeExprState tableNameValueOfMethod : tableNameValueOfMethodList) {
                     List<StringValueState> tableNames = new ArrayList<>();

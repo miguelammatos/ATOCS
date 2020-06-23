@@ -6,6 +6,10 @@ public class HBaseInfo {
     public static final String BYTES_CLASS = "org.apache.hadoop.hbase.util.Bytes";
     public static final String BYTES_TO_BYTES_METHOD = "toBytes";
 
+    //Table classes and methods
+    public static final String TABLENAME_CLASS = "org.apache.hadoop.hbase.TableName";
+    public static final String TABLENAME_VALUE_OF_METHOD = "valueOf";
+
     //Get class and methods
     public static final String GET_CLASS = "org.apache.hadoop.hbase.client.Get";
     public static final String ADD_COLUMN_METHOD = "addColumn";

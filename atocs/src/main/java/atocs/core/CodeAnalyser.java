@@ -540,7 +540,7 @@ public class CodeAnalyser {
      * @param constantState constant ValueState.
      * @return String corresponding to the constant value.
      */
-    static StringValueState getStringFromConst(ConstantState constantState) { //TODO check other types
+    static StringValueState getStringFromConst(ConstantState constantState) {
         Constant constant = constantState.getValue();
         String value = "?";
         if (constant instanceof IntConstant)
@@ -1057,7 +1057,7 @@ public class CodeAnalyser {
      * @return true if the methods are equal or if the subMethod overrides the superMethod, false otherwise.
      */
     public static boolean isMethodEqualToOrOverrides(SootMethod superMethod, SootMethod subMethod) {
-        //TODO improve this comparison. SubSignature includes: method name, return type and argument types
+        //SubSignature includes: method name, return type and argument types
         if (subMethod.getSubSignature().equals(superMethod.getSubSignature())) {
             if (subMethod.equals(superMethod)) // completely equal
                 return true;

@@ -17,8 +17,6 @@ public class HBaseInfo2 {
     public static final String TABLE_INTERFACE = "org.apache.hadoop.hbase.client.Table";
     public static final String CONNECTION_CLASS = "org.apache.hadoop.hbase.client.Connection";
     public static final String CONNECTION_GET_TABLE_METHOD = "getTable";
-    public static final String TABLENAME_CLASS = "org.apache.hadoop.hbase.TableName";
-    public static final String TABLENAME_VALUE_OF_METHOD = "valueOf";
 
     //CompareOperator class and methods
     public static final String COMPARE_OPERATOR_ENUM = "org.apache.hadoop.hbase.CompareOperator";

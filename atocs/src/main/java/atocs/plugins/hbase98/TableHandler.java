@@ -1,5 +1,9 @@
 package atocs.plugins.hbase98;
 
+import atocs.core.Constants;
+import atocs.plugins.hbase2.HBase2Plugin;
+import atocs.plugins.hbasecommon.HBaseInfo;
+import atocs.plugins.hbasecommon.HBasePlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import atocs.core.CodeAnalyser;
@@ -20,23 +24,56 @@ public class TableHandler {
      * @param tableInvokeExprState application state when the table method invocation was found.
      * @return list of possible names of the table.
      */
-    List<StringValueState> getHTableName(InvokeExprState tableInvokeExprState) { // TODO support all the other HTable constructors
+    List<StringValueState> getHTableName(InvokeExprState tableInvokeExprState) {
         List<StringValueState> tableNames = new ArrayList<>();
         ValueState tableRef = tableInvokeExprState.getInstance(); //HTable object
         List<InvokeExprState> tableInitExprs = CodeAnalyser.findObjConstructorInvocationFromObjRef(tableRef);
         for (InvokeExprState initExpr : tableInitExprs) {
+            List<StringValueState> possibleTableNames = new ArrayList<>();
             if (initExpr.getArgCount() >= 2) {
-                List<StringValueState> possibleTableNames = CodeAnalyser.getStringAssignedToVariable(
-                        initExpr.getArg(1));
-                for (StringValueState tableName : possibleTableNames) {
-                    if (!tableName.getStringValue().equals("?"))
-                        tableNames.add(tableName);
+                ValueState firstArg = initExpr.getArg(0);
+                ValueState secondArg = initExpr.getArg(1);
+                if (CodeAnalyser.isOfType(firstArg, HBaseInfo.TABLENAME_CLASS)) {
+                    possibleTableNames = getStringValueStatesFromTableNameArg(firstArg);
+                } else if (CodeAnalyser.isArrayOfBytes(firstArg)) {
+                    possibleTableNames = HBasePlugin.getStringFromToBytesMethod(firstArg);
+                } else if (CodeAnalyser.isOfType(secondArg, Constants.STRING_CLASS)) {
+                    possibleTableNames = CodeAnalyser.getStringAssignedToVariable(secondArg);
+                } else if (CodeAnalyser.isArrayOfBytes(secondArg)) {
+                    possibleTableNames = HBasePlugin.getStringFromToBytesMethod(secondArg);
+                } else if (CodeAnalyser.isOfType(secondArg, HBaseInfo.TABLENAME_CLASS)) {
+                    possibleTableNames = getStringValueStatesFromTableNameArg(secondArg);
                 }
-            } else {
-                logger.error("Unknown HTable constructor.");
+            }
+            for (StringValueState tableName : possibleTableNames) {
+                if (!tableName.getStringValue().equals("?"))
+                    tableNames.add(tableName);
             }
         }
         return tableNames;
+    }
+
+    private List<StringValueState> getStringValueStatesFromTableNameArg(ValueState arg) {
+        List<StringValueState> values = new ArrayList<>();
+        List<InvokeExprState> tableNameValueOfMethodList = CodeAnalyser.findMethodInvocationAssignedToVariable(
+                HBaseInfo.TABLENAME_CLASS, HBaseInfo.TABLENAME_VALUE_OF_METHOD, arg);
+        for (InvokeExprState tableNameValueOfMethod : tableNameValueOfMethodList) {
+            if (tableNameValueOfMethod.getArgCount() == 1) {
+                if (CodeAnalyser.isOfType(tableNameValueOfMethod.getArg(0), Constants.STRING_CLASS)) {
+                    values.addAll(CodeAnalyser.getStringAssignedToVariable(
+                            tableNameValueOfMethod.getArg(0)));
+                } else if (CodeAnalyser.isArrayOfBytes(tableNameValueOfMethod.getArg(0))) {
+                    values.addAll(HBase2Plugin.getStringFromToBytesMethod(
+                            tableNameValueOfMethod.getArg(0)));
+                }
+            } else if (tableNameValueOfMethod.getArgCount() == 3) {
+                values.addAll(HBase2Plugin.getStringFromToBytesMethod(
+                        tableNameValueOfMethod.getArg(0)));
+            } else {
+                logger.error("Unable to recognise method " + tableNameValueOfMethod.getValue());
+            }
+        }
+        return values;
     }
 
 }
