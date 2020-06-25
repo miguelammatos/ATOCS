@@ -151,14 +151,16 @@ public class Parser {
         List<Type> argumentList = new ArrayList<>();
         for (Object argObj : arguments) {
             String type = (String) argObj;
-            String typeLower = type.toLowerCase();
             Type arg;
+            boolean isArrayOf = false;
+            if (type.endsWith("[]") && type.length() > 2) {
+                isArrayOf = true;
+                type = type.substring(0, type.length()-2);
+            }
+            String typeLower = type.toLowerCase();
             switch (typeLower){
                 case BYTE_TYPE:
                     arg = ByteType.v();
-                    break;
-                case BYTE_ARRAY_TYPE:
-                    arg = ArrayType.v(ByteType.v(), 1);
                     break;
                 case INT_TYPE:
                     arg = IntType.v();
@@ -182,7 +184,10 @@ public class Parser {
                     arg = RefType.v(type);
                     break;
             }
-            argumentList.add(arg);
+            if (isArrayOf)
+                argumentList.add(ArrayType.v(arg, 1));
+            else
+                argumentList.add(arg);
         }
         return argumentList;
     }

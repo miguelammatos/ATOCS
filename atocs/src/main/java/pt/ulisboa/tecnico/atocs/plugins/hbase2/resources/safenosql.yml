@@ -45,3 +45,8 @@ methods:
     args:
       - - byte[]
         - byte[]
+  - name: batch
+    operation: BATCH
+    args:
+      - - java.util.List
+        - java.lang.Object[]

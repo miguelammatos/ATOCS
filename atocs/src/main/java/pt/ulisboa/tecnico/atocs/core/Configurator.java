@@ -71,7 +71,6 @@ public class Configurator {
             printFieldCiphers(writer);
             printUnsupportedFieldRequirements(unsupportedFields, writer);
             printOptimisations(optimisations, writer);
-            printAllObtainedFields(writer);
         } catch (IOException e) {
             throw new ReportException();
         }

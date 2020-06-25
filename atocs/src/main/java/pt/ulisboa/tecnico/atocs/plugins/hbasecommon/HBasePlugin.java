@@ -56,25 +56,43 @@ public abstract class HBasePlugin extends DatabasePlugin {
                 handlePutOperation(tableNames);
                 break;
             case "GET":
-                handleGetOperation(tableInvokeExprState, tableNames);
+                if (tableInvokeExprState.getArgCount() == 1)
+                    handleGetOperation(tableInvokeExprState.getArg(0), tableNames);
+                else
+                    logger.error("Unknown Table get operation");
                 break;
             case "SCAN":
-                handleScanOperation(tableInvokeExprState, tableNames);
+                if (tableInvokeExprState.getArgCount() == 1)
+                    handleScanOperation(tableInvokeExprState.getArg(0), tableNames);
+                else
+                    logger.error("Unknown Table scan operation argument.");
                 break;
             case "DELETE":
                 handleDeleteOperation(tableNames);
                 break;
             case "INCREMENT":
-                handleIncrementOperation(tableInvokeExprState, tableNames);
+                if (tableInvokeExprState.getArgCount() == 1)
+                    handleIncrementOperation(tableInvokeExprState.getArg(0), tableNames);
+                else
+                    logger.error("Unknown Table increment operation argument.");
+                break;
+            case "INCCOLVAL":
+                handleIncrementColumnValueOperation(tableInvokeExprState, tableNames);
                 break;
             case "APPEND":
-                handleAppendOperation(tableInvokeExprState, tableNames);
+                if (tableInvokeExprState.getArgCount() == 1)
+                    handleAppendOperation(tableInvokeExprState, tableNames);
+                else
+                    logger.error("Unknown Table append operation argument.");
                 break;
             case "MUTATE":
                 handleMutateRowOperation(tableNames);
                 break;
             case "CHECKMUTATE":
-                handleCheckAndMutateOperation(tableInvokeExprState, tableNames);
+                handleCheckAndMutateOperation(tableNames);
+                break;
+            case "BATCH":
+                handleBatchOperation(tableInvokeExprState, tableNames);
                 break;
             default:
                 logger.error("Unknown HBase operation");
@@ -96,48 +114,38 @@ public abstract class HBasePlugin extends DatabasePlugin {
     /**
      * Analyses a get operation and determines the database field requirements.
      *
-     * @param tableInvokeExprState application state when the get operation was found.
+     * @param getObj get object state.
      * @param tableNames the possible table names.
      */
-    protected void handleGetOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
-        if (tableInvokeExprState.getArgCount() == 1) {
-            requirementGenerator.generateKeyEqualityRequirement("GET",
-                    CodeAnalyser.getStringsFromStringValueStates(tableNames));
-            ValueState tableGetArg = tableInvokeExprState.getArg(0);
-            List<ValueState> getObjRefs = new ArrayList<>();
-            if (CodeAnalyser.isOfType(tableGetArg, HBaseInfo.GET_CLASS))
-                getObjRefs.add(tableGetArg);
-            else if (CodeAnalyser.isOfType(tableGetArg, Constants.JAVA_LIST))
-                getObjRefs.addAll(CodeAnalyser.getObjsAddedToList(tableGetArg));
-            else {
-                logger.error("Unknown Table get operation argument.");
-                return;
-            }
-            handleOperationArguments(getObjRefs, tableNames);
-        } else {
-            logger.error("Unknown Table get operation");
+    protected void handleGetOperation(ValueState getObj, List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyEqualityRequirement("GET",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+        List<ValueState> getObjRefs = new ArrayList<>();
+        if (CodeAnalyser.isOfType(getObj, HBaseInfo.GET_CLASS))
+            getObjRefs.add(getObj);
+        else if (CodeAnalyser.isOfType(getObj, Constants.JAVA_LIST))
+            getObjRefs.addAll(CodeAnalyser.getObjsAddedToList(getObj));
+        else {
+            logger.error("Unknown Table get operation argument.");
+            return;
         }
+        handleOperationArguments(getObjRefs, tableNames);
     }
 
     /**
      * Analyses a scan operation and determines the database field requirements.
      *
-     * @param tableInvokeExprState application state when the scan operation was found.
+     * @param scanObj scan object state.
      * @param tableNames the possible table names.
      */
-    protected void handleScanOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
-        if (tableInvokeExprState.getArgCount() == 1) {
-            requirementGenerator.generateKeyOrderRequirement("SCAN",
-                    CodeAnalyser.getStringsFromStringValueStates(tableNames));
-            ValueState tableScanArg = tableInvokeExprState.getArg(0);
-            if (CodeAnalyser.isOfType(tableScanArg, HBaseInfo.SCAN_CLASS)) {
-                List<ValueState> scanObjRefs = new ArrayList<>();
-                scanObjRefs.add(tableScanArg);
-                handleOperationArguments(scanObjRefs, tableNames);
-                return;
-            }
+    protected void handleScanOperation(ValueState scanObj, List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyOrderRequirement("SCAN",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+        if (CodeAnalyser.isOfType(scanObj, HBaseInfo.SCAN_CLASS)) {
+            List<ValueState> scanObjRefs = new ArrayList<>();
+            scanObjRefs.add(scanObj);
+            handleOperationArguments(scanObjRefs, tableNames);
         }
-        logger.error("Unknown Table scan operation argument.");
     }
 
     /**
@@ -153,21 +161,32 @@ public abstract class HBasePlugin extends DatabasePlugin {
     /**
      * Analyses an increment operation and determines the database field requirements.
      *
+     * @param incObj increment object state.
+     * @param tableNames the possible table names.
+     */
+    protected void handleIncrementOperation(ValueState incObj, List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyEqualityRequirement("INCREMENT",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+        intersectValues(tableNames, handleIncrementAndAppendObject(incObj));
+    }
+
+    /**
+     * Analyses an incrementColumnValue operation and determines the database field requirements.
+     *
      * @param tableInvokeExprState application state when the scan operation was found.
      * @param tableNames the possible table names.
      */
-    protected void handleIncrementOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
+    protected void handleIncrementColumnValueOperation(InvokeExprState tableInvokeExprState,
+                                                       List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyEqualityRequirement("INCCOLVAL",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
         List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers = new ArrayList<>();
-        if (tableInvokeExprState.getArgCount() == 1) {
-            List<ValueState> incObjRefs = new ArrayList<>();
-            incObjRefs.add(tableInvokeExprState.getArg(0));
-            columnFamilyAndQualifiers.addAll(handleIncrementAndAppendObject(incObjRefs));
-        } else if (tableInvokeExprState.getArgCount() == 4 || tableInvokeExprState.getArgCount() == 5) {
+        if (tableInvokeExprState.getArgCount() == 4 || tableInvokeExprState.getArgCount() == 5) {
             columnFamilyAndQualifiers.add(new ColumnFamilyAndQualifier(
                     getStringFromToBytesMethod(tableInvokeExprState.getArg(1)),
                     getStringFromToBytesMethod(tableInvokeExprState.getArg(2))));
         } else {
-            logger.error("Unknown Table increment operation argument.");
+            logger.error("Unknown Table incrementColumnValue operation argument.");
             return;
         }
 
@@ -177,17 +196,13 @@ public abstract class HBasePlugin extends DatabasePlugin {
     /**
      * Analyses an append operation and determines the database field requirements.
      *
+     * @param appendObj append object state.
      * @param tableNames the possible table names.
      */
-    protected void handleAppendOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
-        if (tableInvokeExprState.getArgCount() == 1) {
-            List<ValueState> objRefs = new ArrayList<>();
-            objRefs.add(tableInvokeExprState.getArg(0));
-            List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers = handleIncrementAndAppendObject(objRefs);
-            intersectValues(tableNames, columnFamilyAndQualifiers);
-        } else {
-            logger.error("Unknown Table append operation argument.");
-        }
+    protected void handleAppendOperation(ValueState appendObj, List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyEqualityRequirement("APPEND",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+        intersectValues(tableNames, handleIncrementAndAppendObject(appendObj));
     }
 
     /**
@@ -202,22 +217,62 @@ public abstract class HBasePlugin extends DatabasePlugin {
     }
 
     /**
-     * Analyses a checkAndMutate operation and determines the database field requirements.
+     * Analyses a checkAndMutate operation and determines the database field requirements. CheckAndMutate object
+     * only supports Put, Delete and RowMutates objects.
+     *
+     * @param tableNames the possible table names.
+     */
+    protected void handleCheckAndMutateOperation(List<StringValueState> tableNames) {
+        requirementGenerator.generateKeyEqualityRequirement("CHECKMUTATE",
+                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+    }
+
+    /**
+     * Analyses a batch operation and determines the database field requirements.
      *
      * @param tableInvokeExprState application state when the scan operation was found.
      * @param tableNames the possible table names.
      */
-    protected void handleCheckAndMutateOperation(InvokeExprState tableInvokeExprState,
-                                                 List<StringValueState> tableNames) {
-        requirementGenerator.generateKeyEqualityRequirement("CHECKMUTATE",
-                CodeAnalyser.getStringsFromStringValueStates(tableNames));
+    protected void handleBatchOperation(InvokeExprState tableInvokeExprState, List<StringValueState> tableNames) {
         if (tableInvokeExprState.getArgCount() == 2) {
-            if (CodeAnalyser.isOfType(tableInvokeExprState.getArg(1), HBaseInfo.FILTER)) {
-                getFilterHandler().handleFilter(CodeAnalyser.getStringsFromStringValueStates(tableNames),
-                        tableInvokeExprState.getArg(1), new ArrayList<>());
+            List<ValueState> rowObjs = CodeAnalyser.getObjsAddedToList(tableInvokeExprState.getArg(0));
+            for (ValueState rowObj : rowObjs) {
+                determineAndHandleOperation(rowObj, tableNames);
             }
         } else {
-            logger.error("Unknown Table checkAndMutate operation argument.");
+            logger.error("Unknown Table batch operation argument.");
+        }
+    }
+
+    /**
+     * Determines the operation type provided and analyses that operation.
+     *
+     * @param opObj operation object state.
+     * @param tableNames the possible table names.
+     */
+    void determineAndHandleOperation(ValueState opObj, List<StringValueState> tableNames) {
+        if (CodeAnalyser.isOfType(opObj, HBaseInfo.PUT_CLASS))
+            handlePutOperation(tableNames);
+        else if (CodeAnalyser.isOfType(opObj, HBaseInfo.GET_CLASS))
+            handleGetOperation(opObj, tableNames);
+        else if (CodeAnalyser.isOfType(opObj, HBaseInfo.SCAN_CLASS))
+            handleScanOperation(opObj, tableNames);
+        else if (CodeAnalyser.isOfType(opObj, HBaseInfo.DELETE_CLASS))
+            handleDeleteOperation(tableNames);
+        else if (CodeAnalyser.isOfType(opObj, HBaseInfo.INCREMENT_CLASS))
+            handleIncrementOperation(opObj, tableNames);
+        else if (CodeAnalyser.isOfType(opObj, HBaseInfo.APPEND_CLASS))
+            handleAppendOperation(opObj, tableNames);
+        else if (CodeAnalyser.isOfType(opObj, HBaseInfo.ROW_MUTATIONS_CLASS))
+            handleMutateRowOperation(tableNames);
+        else if (CodeAnalyser.isOfType(opObj, HBaseInfo.CHECK_AND_MUTATE_CLASS))
+            handleCheckAndMutateOperation(tableNames);
+        else {
+            List<ValueState> possibleConcreteOperations = CodeAnalyser.getNextValue(opObj);
+            for (ValueState possibleConcreteOperation : possibleConcreteOperations) {
+                if (CodeAnalyser.isOfType(possibleConcreteOperation, HBaseInfo.ROW_CLASS))
+                    determineAndHandleOperation(possibleConcreteOperation, tableNames);
+            }
         }
     }
 
@@ -225,11 +280,13 @@ public abstract class HBasePlugin extends DatabasePlugin {
     /**
      * Determines the String value of the column family and qualifier from a given Increment or Append object.
      *
-     * @param objRefs the Increment or Append objects
+     * @param obj the Increment or Append object state.
      * @return the list of Strings associated with this column family and qualifier.
      */
-    protected List<ColumnFamilyAndQualifier> handleIncrementAndAppendObject(List<ValueState> objRefs) {
+    protected List<ColumnFamilyAndQualifier> handleIncrementAndAppendObject(ValueState obj) {
         List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers = new ArrayList<>();
+        List<ValueState> objRefs = new ArrayList<>();
+        objRefs.add(obj);
         for (int i = 0; i < objRefs.size(); i++) {
             ValueState objRef = objRefs.get(i);
             // Determine if the object was created based on another object and add it

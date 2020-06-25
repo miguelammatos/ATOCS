@@ -10,20 +10,19 @@ public class HBaseInfo {
     public static final String TABLENAME_CLASS = "org.apache.hadoop.hbase.TableName";
     public static final String TABLENAME_VALUE_OF_METHOD = "valueOf";
 
-    //Get class and methods
+    //Operation class and methods
+    public static final String ROW_CLASS = "org.apache.hadoop.hbase.client.Row";
+    public static final String PUT_CLASS = "org.apache.hadoop.hbase.client.Put";
     public static final String GET_CLASS = "org.apache.hadoop.hbase.client.Get";
+    public static final String SCAN_CLASS = "org.apache.hadoop.hbase.client.Scan";
     public static final String ADD_COLUMN_METHOD = "addColumn";
     public static final String ADD_FAMILY_METHOD = "addFamily";
     public static final String SET_FILTER_METHOD = "setFilter";
-
-    //Scan class and methods
-    public static final String SCAN_CLASS = "org.apache.hadoop.hbase.client.Scan";
-
-    //Increment class and methods
+    public static final String DELETE_CLASS = "org.apache.hadoop.hbase.client.Delete";
     public static final String INCREMENT_CLASS = "org.apache.hadoop.hbase.client.Increment";
-
-    //Increment class and methods
     public static final String APPEND_CLASS = "org.apache.hadoop.hbase.client.Append";
+    public static final String ROW_MUTATIONS_CLASS = "org.apache.hadoop.hbase.client.RowMutations";
+    public static final String CHECK_AND_MUTATE_CLASS = "org.apache.hadoop.hbase.client.CheckAndMutate";
 
     //Abstract Filter class and methods
     public static final String FILTER = "org.apache.hadoop.hbase.filter.Filter";

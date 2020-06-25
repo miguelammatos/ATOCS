@@ -37,7 +37,7 @@ methods:
     args:
       - - org.apache.hadoop.hbase.client.Increment
   - name: incrementColumnValue
-    operation: INCREMENT
+    operation: INCCOLVAL
     args:
       - - byte[]
         - byte[]
@@ -56,8 +56,8 @@ methods:
     operation: MUTATE
     args:
       - - org.apache.hadoop.hbase.client.RowMutations
-  - name: checkAndMutate
-    operation: CHECKMUTATE
+  - name: batch
+    operation: BATCH
     args:
-      - - byte[]
-        - byte[]
+      - - java.util.List
+        - java.lang.Object[]
