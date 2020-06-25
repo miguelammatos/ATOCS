@@ -60,4 +60,9 @@ public class HBaseInfo {
     public static final String BIT_COMPARATOR = "org.apache.hadoop.hbase.filter.BitComparator";
     public static final String SUB_STRING_COMPARATOR = "org.apache.hadoop.hbase.filter.SubstringComparator";
     public static final String REGEX_STRING_COMPARATOR = "org.apache.hadoop.hbase.filter.RegexStringComparator";
+
+    //Cell implementations
+    public static final String KEY_VALUE_CLASS = "org.apache.hadoop.hbase.KeyValue";
+    public static final String CELL_CLASS = "org.apache.hadoop.hbase.Cell";
+
 }

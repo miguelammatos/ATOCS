@@ -167,7 +167,7 @@ public abstract class HBasePlugin extends DatabasePlugin {
     protected void handleIncrementOperation(ValueState incObj, List<StringValueState> tableNames) {
         requirementGenerator.generateKeyEqualityRequirement("INCREMENT",
                 CodeAnalyser.getStringsFromStringValueStates(tableNames));
-        intersectValues(tableNames, handleIncrementAndAppendObject(incObj));
+        intersectValues(tableNames, handleIncrementAndAppendObject(incObj), "inc");
     }
 
     /**
@@ -190,7 +190,7 @@ public abstract class HBasePlugin extends DatabasePlugin {
             return;
         }
 
-        intersectValues(tableNames, columnFamilyAndQualifiers);
+        intersectValues(tableNames, columnFamilyAndQualifiers, "inc");
     }
 
     /**
@@ -202,7 +202,7 @@ public abstract class HBasePlugin extends DatabasePlugin {
     protected void handleAppendOperation(ValueState appendObj, List<StringValueState> tableNames) {
         requirementGenerator.generateKeyEqualityRequirement("APPEND",
                 CodeAnalyser.getStringsFromStringValueStates(tableNames));
-        intersectValues(tableNames, handleIncrementAndAppendObject(appendObj));
+        intersectValues(tableNames, handleIncrementAndAppendObject(appendObj), "app");
     }
 
     /**
@@ -299,8 +299,15 @@ public abstract class HBasePlugin extends DatabasePlugin {
                     objRefs.add(incInitExpr.getArg(0));
                 } else if (incInitExpr.getArgCount() == 3
                         && CodeAnalyser.isOfType(incInitExpr.getArg(2), Constants.JAVA_MAP)) {
-                    logger.warn("HBase Increment and Append objects with the following constructor are not supported. " +
-                            "Analysis may be less precise regarding this operation. {}", incInitExpr);
+//                    logger.warn("HBase Increment and Append objects with the following constructor are not supported. " +
+//                            "Analysis may be less precise regarding this operation. {}", incInitExpr);
+                    List<ValueState> objsAddedToMap = CodeAnalyser.getObjsAddedToMap(incInitExpr.getArg(2));
+                    for (ValueState objAddedToMap : objsAddedToMap) {
+                        List<ValueState> objsAddedToList = CodeAnalyser.getObjsAddedToList(objAddedToMap);
+                        for (ValueState objAddedToList : objsAddedToList) {
+                            columnFamilyAndQualifiers.addAll(determineFamAndQuaFromCell(objAddedToList));
+                        }
+                    }
                 }
             }
 
@@ -317,8 +324,47 @@ public abstract class HBasePlugin extends DatabasePlugin {
         return columnFamilyAndQualifiers;
     }
 
+    /**
+     * Determines the String value of the column family and qualifier from a given Cell object. Only the KeyValue
+     * implementation of the Cell interface is supported.
+     *
+     * @param cell the Cell object state.
+     * @return the list of Strings associated with this column family and qualifier.
+     */
+    List<ColumnFamilyAndQualifier> determineFamAndQuaFromCell(ValueState cell) {
+        List<ColumnFamilyAndQualifier> familyAndQualifiers = new ArrayList<>();
+        if (CodeAnalyser.isOfType(cell, HBaseInfo.KEY_VALUE_CLASS)) {
+            List<InvokeExprState> initExprs = CodeAnalyser.findObjConstructorInvocationFromObjRef(cell);
+            for (InvokeExprState initExpr : initExprs) {
+                if (initExpr.getArgCount() >= 3 && CodeAnalyser.isArrayOfBytes(initExpr.getArg(1))
+                        && CodeAnalyser.isArrayOfBytes(initExpr.getArg(2))) {
+                    List<StringValueState> families = getStringFromToBytesMethod(initExpr.getArg(1));
+                    List<StringValueState> qualifiers = getStringFromToBytesMethod(initExpr.getArg(2));
+                    familyAndQualifiers.add(new ColumnFamilyAndQualifier(families, qualifiers));
+                } else {
+                    logger.warn("HBase KeyValue constructor not supported. {}", initExpr);
+                }
+            }
+        } else {
+            List<ValueState> possibleConcreteCells = CodeAnalyser.getNextValue(cell);
+            for (ValueState possibleConcreteCell : possibleConcreteCells) {
+                if (CodeAnalyser.isOfType(possibleConcreteCell, HBaseInfo.CELL_CLASS))
+                    familyAndQualifiers.addAll(determineFamAndQuaFromCell(possibleConcreteCell));
+            }
+        }
+        return familyAndQualifiers;
+    }
+
+    /**
+     * Intersects the values of the table, column family and column qualifier from an increment or append operation.
+     * Generated the obtained fields and requirements.
+     *
+     * @param tableNames the possible table names.
+     * @param columnFamilyAndQualifiers the column families and qualifier of the operation.
+     * @param type the type of operation, either "inc" or "app".
+     */
     protected void intersectValues(List<StringValueState> tableNames,
-                                   List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers) {
+                                   List<ColumnFamilyAndQualifier> columnFamilyAndQualifiers, String type) {
         for (StringValueState tableName : tableNames) {
             List<String> intersectTables = new ArrayList<>();
             List<String> intersectFamilies = new ArrayList<>();
@@ -335,8 +381,10 @@ public abstract class HBasePlugin extends DatabasePlugin {
             }
             intersectTables.add(tableName.getStringValue());
             requirementGenerator.addObtainedField(intersectTables, intersectFamilies, intersectQualifiers);
-            requirementGenerator.generateIncrementRequirement(intersectTables, intersectFamilies,
-                    intersectQualifiers);
+            if (type.equals("inc")) {
+                requirementGenerator.generateIncrementRequirement(intersectTables, intersectFamilies,
+                        intersectQualifiers);
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.atocs.core;
 
+import fj.P;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.*;
@@ -228,6 +229,18 @@ public class CodeAnalyser {
      */
     public static List<ValueState> getObjsAddedToSet(ValueState setRefState) {
         return NativeJavaAnalyser.getObjsAddedToSet(setRefState);
+    }
+
+    /**
+     * Obtains the object references added to a Map. Supports Map with the following methods: put, putAll and
+     * putIfAbsent.
+     * Only returns the values added to the map and not the keys
+     *
+     * @param mapRefState map reference state.
+     * @return all object references added to a Map, if any.
+     */
+    public static List<ValueState> getObjsAddedToMap(ValueState mapRefState) {
+        return NativeJavaAnalyser.getObjsAddedToMap(mapRefState);
     }
 
     /**
@@ -981,7 +994,8 @@ public class CodeAnalyser {
             varSuperClassesAndInterfaces.addAll(hierarchy.getSuperinterfacesOf(varClass));
         else {
             varSuperClassesAndInterfaces.addAll(hierarchy.getSuperclassesOf(varClass));
-            varSuperClassesAndInterfaces.addAll(varClass.getInterfaces());
+            for (SootClass inter : varClass.getInterfaces())
+                varSuperClassesAndInterfaces.addAll(hierarchy.getSuperinterfacesOfIncluding(inter));
         }
         for (SootClass varSuperClass : varSuperClassesAndInterfaces) {
             if (varSuperClass.equals(superClass))
