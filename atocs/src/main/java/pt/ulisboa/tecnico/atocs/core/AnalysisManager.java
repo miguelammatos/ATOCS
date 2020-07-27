@@ -43,6 +43,8 @@ public class AnalysisManager extends SceneTransformer {
         API.getInstance().init(atocsConfig.getApiFilePath());
         atocsConfig.getDatabasePlugin().setApi();
 
+//        test();
+
         Inspector inspector = new Inspector();
         Set<SootMethod> methodsToAnalyse = inspector.getMethodsWithDbInteractions();
 
@@ -56,7 +58,7 @@ public class AnalysisManager extends SceneTransformer {
     }
 
     void test() {
-        SootMethod m = Scene.v().getSootClass("Db").getMethodByName("increment");
+        SootMethod m = Scene.v().getSootClass("Db").getMethodByName("scan");
         UnitGraph graph = new BriefUnitGraph(m.getActiveBody());
         Iterator<Unit> unitIt = graph.iterator();
 

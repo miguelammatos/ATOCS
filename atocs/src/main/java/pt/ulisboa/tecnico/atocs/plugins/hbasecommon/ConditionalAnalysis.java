@@ -36,15 +36,8 @@ public class ConditionalAnalysis {
                     pathField.add(searchValueState);
                     allPathFields.add(pathField);
                 } else {
-                    List<ConditionalStmt> conditionalStmtsAfter = searchValueState.getStack()
-                            .getCurrentConditionalStmtsAfter(tBaseValueState.getStack().getCurrentConditionalStmts());
-                    if (conditionalStmtsAfter.isEmpty()) {
-                        logger.error("This conditional statements cannot be empty!"); // should have entered in the previous equal condition
-                        return new ArrayList<>();
-                    }
-                    ConditionalStmt nextCondStmt = conditionalStmtsAfter.get(0);
-                    List<T> pathFields = explorePaths(nextCondStmt, searchValueStates, alreadyAnalysed);
-                    allPathFields.add(pathFields);
+                    allPathFields.add(doExplorePaths(searchValueState, tBaseValueState, searchValueStates,
+                            alreadyAnalysed));
                 }
             } else {
                 ConditionalStmt lastIntersect = tBaseValueState.getStack().getLastCondStmtsIntersect(
@@ -69,9 +62,11 @@ public class ConditionalAnalysis {
                     else
                         logger.warn("Unknown ConditionalStmt.");
                     if (!dependents.contains(valueDiffStmt)) { // case of two unrelated conditional block
-                        List<T> pathField = new ArrayList<>();
-                        pathField.add(null);
-                        allPathFields.add(pathField);
+                        allPathFields.add(doExplorePaths(searchValueState, tBaseValueState, searchValueStates,
+                                alreadyAnalysed));
+//                        List<T> pathField = new ArrayList<>();
+//                        pathField.add(null);
+//                        allPathFields.add(pathField);
                     } else {
                         noIntersectionFields.add(searchValueState);
                     }
@@ -92,6 +87,22 @@ public class ConditionalAnalysis {
         if (allNullPaths)
             return new ArrayList<>();
         return obtainedFields;
+    }
+
+    static <T extends ValueState> List<T> doExplorePaths(ValueState searchValueState, ValueState tBaseValueState,
+                                                         List<T> searchValueStates, Set<T> alreadyAnalysed) {
+        List<ConditionalStmt> conditionalStmtsAfter = null;
+        if (tBaseValueState.getStack().intersectConditionalStmts(searchValueState.getStack()))
+            conditionalStmtsAfter = searchValueState.getStack()
+                    .getCurrentConditionalStmtsAfter(tBaseValueState.getStack().getCurrentConditionalStmts());
+        else
+            conditionalStmtsAfter = searchValueState.getStack().getCurrentConditionalStmts();
+
+        if (conditionalStmtsAfter == null || conditionalStmtsAfter.isEmpty())
+            return new ArrayList<>();
+
+        ConditionalStmt nextCondStmt = conditionalStmtsAfter.get(0);
+        return explorePaths(nextCondStmt, searchValueStates, alreadyAnalysed);
     }
 
     static <T extends ValueState> List<T> explorePaths(ConditionalStmt nextConditionalStmt, List<T> valueStates,
@@ -117,14 +128,17 @@ public class ConditionalAnalysis {
         } else {
             List<T> nextPathValues1 = getNextPathValues(nextConditionalStmt, valueStates);
             List<T> nextPathValues2 = getNextPathValues(dependent, valueStates);
-            if (nextPathValues1.isEmpty() || nextPathValues2.isEmpty()) {
+            if (nextPathValues1.isEmpty()) {
                 alreadyAnalysed.addAll(nextPathValues1);
-                alreadyAnalysed.addAll(nextPathValues2);
                 obtainedFields.add(null);
-                return obtainedFields;
             } else {
                 obtainedFields.addAll(exploreNextPath(nextPathValues1, nextConditionalStmt, valueStates,
                         alreadyAnalysed));
+            }
+            if (nextPathValues2.isEmpty()) {
+                alreadyAnalysed.addAll(nextPathValues2);
+                obtainedFields.add(null);
+            } else {
                 obtainedFields.addAll(exploreNextPath(nextPathValues2, dependent, valueStates, alreadyAnalysed));
             }
         }

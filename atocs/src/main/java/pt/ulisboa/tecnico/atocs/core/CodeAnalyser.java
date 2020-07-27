@@ -286,8 +286,11 @@ public class CodeAnalyser {
         List<InvokeExprState> methodInvokeExprs = new ArrayList<>();
         List<ValueState> allObjRefs = getAllObjRefsFromSingleRef(ref);
         // For each direct reference we can then find the invoke expressions.
+
+        List<SootMethod> prevSearchMethods = new ArrayList<>();
         for (ValueState objRef : allObjRefs) {
-            methodInvokeExprs.addAll(findMethodInvocationFromSingleObjectRef(methodName, objRef, new ArrayList<>()));
+            prevSearchMethods.add(objRef.getScopeMethod());
+            methodInvokeExprs.addAll(findMethodInvocationFromSingleObjectRef(methodName, objRef, prevSearchMethods));
         }
         return methodInvokeExprs;
     }
