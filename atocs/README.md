@@ -27,3 +27,8 @@ They receive a database operation to analyse through the *analyseDbInteraction* 
 Aside from this, the plugins are responsible for sending all the requirements inferred from the operations analysed to the *Configurator* singleton (which can be accessed by calling `Configurator.getInstance()`).
 
 The *Code Analyser* helper methods are document in the respective class.
+ 
+# Authors
+David Ferreira
+João Paulo
+Miguel Matos
